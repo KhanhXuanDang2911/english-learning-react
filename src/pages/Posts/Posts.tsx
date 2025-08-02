@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +21,7 @@ import {
 } from "lucide-react";
 import PostItem from "@/components/PostItem";
 import type { Post } from "@/components/FeaturedPosts/FeaturedPosts";
-import { DynamicPagination } from "@/components/DynamicPagination/DynamicPagination";
+import DynamicPagination from "@/components/DynamicPagination";
 import SpecialPostItem from "@/components/SpecialPostItem/SpecialPostItem";
 import SpecialPostItemSkeleton from "@/components/Skeleton/SpecialPostItemSkeleton";
 import PostItemSkeleton from "@/components/Skeleton/PostItemSkeleton";

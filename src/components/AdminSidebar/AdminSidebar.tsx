@@ -1,19 +1,20 @@
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Users,
+  BarChart3,
   BookOpen,
   FileText,
-  CreditCard,
+  FolderOpen,
+  GraduationCap,
   Headphones,
-  Tag,
+  Home,
+  LogOut,
   MessageSquare,
   ShoppingCart,
-  Search,
-  Settings,
-  LogOut,
-  ChevronDown,
+  Tag,
   User,
+  Users,
+  Zap,
 } from "lucide-react";
 
 import {
@@ -24,7 +25,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -34,101 +34,146 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    url: "/admin",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Users",
-    url: "/admin/users",
-    icon: Users,
-  },
-  {
-    title: "Courses",
-    url: "/admin/courses",
-    icon: BookOpen,
-  },
-  {
-    title: "Posts",
-    url: "/admin/posts",
-    icon: FileText,
-  },
-  {
-    title: "Flashcards",
-    url: "/admin/flashcards",
-    icon: CreditCard,
-  },
-  {
-    title: "Dictation Lessons",
-    url: "/admin/dictation-lessons",
-    icon: Headphones,
-  },
-  {
-    title: "Coupons",
-    url: "/admin/coupons",
-    icon: Tag,
-  },
-  {
-    title: "Comments",
-    url: "/admin/comments",
-    icon: MessageSquare,
-  },
-  {
-    title: "Orders",
-    url: "/admin/orders",
-    icon: ShoppingCart,
-  },
-];
+const data = {
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/admin",
+      icon: Home,
+    },
+  ],
+  navManagement: [
+    {
+      title: "Users",
+      url: "/admin/users",
+      icon: Users,
+    },
+    {
+      title: "Courses",
+      url: "/admin/courses",
+      icon: GraduationCap,
+    },
+    {
+      title: "Categories",
+      url: "/admin/categories",
+      icon: FolderOpen,
+    },
+    {
+      title: "Chapters",
+      url: "/admin/chapters",
+      icon: BookOpen,
+    },
+    {
+      title: "Posts",
+      url: "/admin/posts",
+      icon: FileText,
+    },
+    {
+      title: "Flashcards",
+      url: "/admin/flashcards",
+      icon: Zap,
+    },
+    {
+      title: "Dictation Lessons",
+      url: "/admin/dictation-lessons",
+      icon: Headphones,
+    },
+    {
+      title: "Coupons",
+      url: "/admin/coupons",
+      icon: Tag,
+    },
+    {
+      title: "Comments",
+      url: "/admin/comments",
+      icon: MessageSquare,
+    },
+    {
+      title: "Orders",
+      url: "/admin/orders",
+      icon: ShoppingCart,
+    },
+  ],
+};
 
-export default function AdminSidebar() {
+export default function AdminSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
 
+  const handleLogout = () => {
+    // Add logout logic here
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/admin">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#155e94] text-white">
-                  <LayoutDashboard className="size-4" />
+              <Link to="/admin" className="flex items-center gap-2">
+                <div className="relative">
+                  <img
+                    src="/images/logo_final.png"
+                    alt="Full Logo"
+                    className="size-10 object-contain group-data-[collapsible=icon]:hidden"
+                  />
+                  <img
+                    src="/images/logo_final.png"
+                    alt="Icon Logo"
+                    className="hidden size-8 object-contain group-data-[collapsible=icon]:block"
+                  />
                 </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Admin Panel</span>
-                  <span className="text-xs">Management System</span>
+
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate font-semibold">
+                    English Learning
+                  </span>
+                  <span className="truncate text-xs">Admin Panel</span>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <form>
-          <SidebarGroup className="py-0">
-            <SidebarGroupContent className="relative">
-              <SidebarInput
-                id="search"
-                placeholder="Search..."
-                className="pl-8"
-              />
-              <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </form>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Overview</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {data.navMain.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    isActive={location.pathname === item.url}
+                  >
+                    <Link to={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {data.navManagement.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
+                    tooltip={item.title}
                     isActive={location.pathname === item.url}
                   >
                     <Link to={item.url}>
@@ -149,39 +194,42 @@ export default function AdminSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-0"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
+                  <Avatar className="h-8 w-8 rounded-lg group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
                     <AvatarImage
                       src="/placeholder.svg?height=32&width=32"
                       alt="Admin"
                     />
-                    <AvatarFallback className="rounded-lg">AD</AvatarFallback>
+                    <AvatarFallback className="rounded-lg text-xs">
+                      AD
+                    </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
+                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold">Admin User</span>
                     <span className="truncate text-xs">admin@example.com</span>
                   </div>
-                  <ChevronDown className="ml-auto size-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                side="bottom"
+                side="right"
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem asChild>
+                  <Link to="/admin/profile" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Profile
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-red-600"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

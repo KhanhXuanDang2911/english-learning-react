@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "../../lib/utils";
-import { Button, buttonVariants } from "../ui/button";
+import { buttonVariants } from "../ui/button";
 
 // Types
 interface DynamicPaginationProps {
@@ -81,7 +81,6 @@ function generatePageNumbers(
 
 // Pagination Item Component
 function PaginationItem({
-  page,
   isActive,
   onClick,
   children,
@@ -113,7 +112,7 @@ function PaginationItem({
 }
 
 // Main Dynamic Pagination Component
-export function DynamicPagination({
+export default function DynamicPagination({
   currentPage,
   totalPages,
   onPageChange,

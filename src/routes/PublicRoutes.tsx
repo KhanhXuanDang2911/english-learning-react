@@ -18,7 +18,6 @@ import CreateFlashcard from "@/pages/CreateFlashcard";
 import Cart from "@/pages/Cart";
 import DictationLessonsPage from "@/pages/DictationLessons";
 import DictationPage from "@/pages/Dictation";
-import TestRichTextForm from "@/components/RichTextEditor/TestRichTextForm";
 
 const PublicRoutes: RouteObject[] = [
   {
@@ -163,14 +162,6 @@ const PublicRoutes: RouteObject[] = [
     element: (
       <MainLayout>
         <DictationPage />
-      </MainLayout>
-    ),
-  },
-  {
-    path: "/test", // Route for a specific dictation lesson
-    element: (
-      <MainLayout>
-        <TestRichTextForm />
       </MainLayout>
     ),
   },

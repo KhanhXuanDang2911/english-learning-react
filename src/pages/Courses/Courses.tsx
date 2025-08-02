@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DynamicPagination } from "@/components/DynamicPagination/DynamicPagination";
+import DynamicPagination from "@/components/DynamicPagination";
 import CourseItemSkeleton from "@/components/Skeleton/CourseItemSkeleton";
 
 const categories = [

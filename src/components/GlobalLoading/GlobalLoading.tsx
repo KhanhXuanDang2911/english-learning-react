@@ -13,34 +13,36 @@ NProgress.configure({
 export default function GlobalLoading() {
   const location = useLocation();
   const prevPath = useRef(location.pathname);
-  const [isRouteChanging, setIsRouteChanging] = useState(false);
+  const [hasNavigated, setHasNavigated] = useState(false);
 
   const isFetching = useIsFetching();
   const isMutating = useIsMutating();
   const isQueryLoading = isFetching > 0 || isMutating > 0;
 
   useEffect(() => {
-    if (!isQueryLoading && location.pathname !== prevPath.current) {
-      setIsRouteChanging(true);
-      NProgress.start();
-
-      const timeout = setTimeout(() => {
-        setIsRouteChanging(false);
-        prevPath.current = location.pathname;
-        NProgress.done();
-      }, 300);
-
-      return () => clearTimeout(timeout);
+    if (location.pathname !== prevPath.current) {
+      prevPath.current = location.pathname;
+      setHasNavigated(true);
     }
-  }, [location.pathname, isQueryLoading]);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!hasNavigated) return;
+    NProgress.start();
+    const timeout = setTimeout(() => {
+      NProgress.done();
+      setHasNavigated(false);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [hasNavigated]);
 
   useEffect(() => {
     if (isQueryLoading) {
       NProgress.start();
-    } else if (!isRouteChanging) {
+    } else {
       NProgress.done();
     }
-  }, [isQueryLoading, isRouteChanging]);
+  }, [isQueryLoading]);
 
   return null;
 }

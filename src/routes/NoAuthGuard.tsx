@@ -1,11 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import routes from "./routes.const";
+import useAuth from "@/context/AuthContext";
 
-interface NoAuthGuardProps {
-  children: React.ReactNode;
-}
-
-export default function NoAuthGuard({ children }: NoAuthGuardProps) {
-  const isAuthenticated = false;
-  return !isAuthenticated ? <>{children}</> : <Navigate to={routes.HOME} />;
+export default function NoAuthGuard() {
+  const { isAuthenticated } = useAuth().state;
+  return !isAuthenticated ? <Outlet /> : <Navigate to={routes.HOME} />;
 }

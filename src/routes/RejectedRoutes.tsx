@@ -1,30 +1,31 @@
 import type { RouteObject } from "react-router-dom";
 import routes from "./routes.const";
 import MainLayout from "@/layouts/MainLayout";
-import Login from "@/pages/Login/Login";
-import Register from "@/pages/Register";
+import Register from "@/pages/SignUp";
 import NoAuthGuard from "./NoAuthGuard";
+import SignIn from "@/pages/SignIn";
 
 const RejectedRoutes: RouteObject[] = [
   {
-    path: routes.LOGIN,
-    element: (
-      <NoAuthGuard>
-        <MainLayout>
-          <Login />
-        </MainLayout>
-      </NoAuthGuard>
-    ),
-  },
-  {
-    path: routes.Register,
-    element: (
-      <NoAuthGuard>
-        <MainLayout>
-          <Register />
-        </MainLayout>
-      </NoAuthGuard>
-    ),
+    element: <NoAuthGuard />,
+    children: [
+      {
+        path: routes.SIGN_IN,
+        element: (
+          <MainLayout>
+            <SignIn />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.SIGN_UP,
+        element: (
+          <MainLayout>
+            <Register />
+          </MainLayout>
+        ),
+      },
+    ],
   },
 ];
 

@@ -6,7 +6,14 @@ import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary.tsx";
 import "./global.css";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      networkMode: "online",
+    },
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>

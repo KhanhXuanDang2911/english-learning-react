@@ -9,8 +9,8 @@ export const BackgroundPattern = () => {
     const calculateParticles = () => {
       const width = window.innerWidth;
 
-      if (width >= 1024) setParticleCount(100);
-      else if (width >= 768) setParticleCount(60);
+      if (width >= 1024) setParticleCount(30);
+      else if (width >= 768) setParticleCount(10);
       else setParticleCount(30);
     };
 

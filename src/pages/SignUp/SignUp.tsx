@@ -1,3 +1,4 @@
+import { AuthApi } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,16 +16,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import routes from "@/routes/routes.const";
+import type { ErrorResponse } from "@/types/common.type";
+import type { SignUpUserRequest } from "@/types/user.type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Select } from "@radix-ui/react-select";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import { z } from "zod";
+import dayjs from "dayjs";
 
 const formSchema = z
   .object({
     fullName: z.string().min(1, "Vui lòng nhập họ và tên"),
-    email: z.string().min(1, "Vui lòng nhập email").email("Email không hợp lệ"),
+    email: z
+      .string()
+      .min(1, "Email không được để trống")
+      .regex(
+        /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,63}[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]{0,253}[a-zA-Z0-9])?\.[a-zA-Z]{2,}$/,
+        "Email không hợp lệ"
+      ),
     password: z
       .string()
       .min(1, "Vui lòng nhập mật khẩu")
@@ -32,9 +46,15 @@ const formSchema = z
     confirmPassword: z.string().min(1, "Vui lòng nhập xác nhận mật khẩu"),
     phone: z
       .string()
-      .min(1, "Vui lòng nhập số điện thoại")
-      .regex(/(84|0[3|5|7|8|9])+([0-9]{8})\b/, "Số điện thoại không hợp lệ"),
-    gender: z.enum(["Nam", "Nữ"], {
+      .regex(/^(?:\+84|0)[35789][0-9]{8}$/, "Số điện thoại không hợp lệ")
+      .optional()
+      .or(z.literal("")),
+    address: z
+      .string()
+      .max(200, "Địa chỉ tối đa 200 ký tự")
+      .optional()
+      .or(z.literal("")),
+    gender: z.enum(["MALE", "FEMALE", "OTHER"], {
       message: "Vui lòng chọn giới tính",
     }),
     birthDate: z
@@ -59,7 +79,7 @@ const formSchema = z
     message: "Mật khẩu xác nhận không khớp",
   });
 
-const Register = () => {
+const SignUp = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
       fullName: "",
@@ -67,13 +87,46 @@ const Register = () => {
       password: "",
       confirmPassword: "",
       phone: "",
-      gender: "Nam",
+      gender: "MALE",
       birthDate: "",
     },
     resolver: zodResolver(formSchema),
   });
+
+  const signUpMutation = useMutation({
+    mutationKey: ["sign-up"],
+    mutationFn: (data: SignUpUserRequest) => AuthApi.signUp(data),
+    onSuccess: () => {
+      toast.success("Đăng ký thành công");
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (!error.response.data.errors) {
+        toast.error(error.response.data.message);
+      }
+      if (error.response.data.errors) {
+        error.response.data.errors?.forEach((fieldError) => {
+          form.setError(
+            fieldError.fieldName as keyof z.infer<typeof formSchema>,
+            {
+              type: "manual",
+              message: fieldError.message,
+            }
+          );
+        });
+      }
+    },
+  });
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     console.log(data);
+    signUpMutation.mutate({
+      fullName: data.fullName,
+      email: data.email,
+      password: data.password,
+      phoneNumber: data.phone ? data.phone : null,
+      gender: data.gender,
+      address: data.address ? data.address : null,
+      birthDate: dayjs(data.birthDate).format("DD/MM/YYYY"),
+    });
   };
   return (
     <div className="main-layout mt-6 mb-12 flex items-center justify-center">
@@ -82,13 +135,8 @@ const Register = () => {
           <p className="mt-4 text-xl font-bold tracking-tight text-[#295779] uppercase">
             Đăng ký
           </p>
-          <Button className="mt-5 w-full gap-3 bg-primary-color hover:bg-hover-primary-color font-normal">
-            <GoogleLogo />
-            Đăng ký với tài khoản google
-          </Button>
           <div className="my-6 w-full flex items-center justify-center overflow-hidden">
             <Separator className="bg-primary-color" />
-            <span className="text-sm px-2 text-primary-color">OR</span>
             <Separator className="bg-primary-color" />
           </div>
           <Form {...form}>
@@ -184,12 +232,29 @@ const Register = () => {
                   <FormItem>
                     <FormLabel className="text-[#295779]">
                       Số điện thoại
-                      <span className="text-red-500 -ml-1.5">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="text"
                         placeholder="Số điện thoại"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#295779]">Địa chỉ</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Địa chỉ"
                         className="w-full"
                         {...field}
                       />
@@ -216,8 +281,9 @@ const Register = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Nam">Nam</SelectItem>
-                        <SelectItem value="Nữ">Nữ</SelectItem>
+                        <SelectItem value="MALE">Nam</SelectItem>
+                        <SelectItem value="FEMALE">Nữ</SelectItem>
+                        <SelectItem value="OTHER">Khác</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -256,7 +322,7 @@ const Register = () => {
           <div className="mt-5">
             <p className="text-sm text-center text-primary-color">
               Đã có tài khoản?
-              <Link to="#" className="ml-1 text-primary-color">
+              <Link to={routes.SIGN_IN} className="ml-1 text-primary-color">
                 Đăng nhập
               </Link>
             </p>
@@ -267,39 +333,4 @@ const Register = () => {
     </div>
   );
 };
-const GoogleLogo = () => (
-  <svg
-    width="1.2em"
-    height="1.2em"
-    id="icon-google"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="inline-block shrink-0 align-sub text-[inherit] size-lg"
-  >
-    <g clipPath="url(#clip0)">
-      <path
-        d="M15.6823 8.18368C15.6823 7.63986 15.6382 7.0931 15.5442 6.55811H7.99829V9.63876H12.3194C12.1401 10.6323 11.564 11.5113 10.7203 12.0698V14.0687H13.2983C14.8122 12.6753 15.6823 10.6176 15.6823 8.18368Z"
-        fill="#4285F4"
-      ></path>
-      <path
-        d="M7.99812 16C10.1558 16 11.9753 15.2915 13.3011 14.0687L10.7231 12.0698C10.0058 12.5578 9.07988 12.8341 8.00106 12.8341C5.91398 12.8341 4.14436 11.426 3.50942 9.53296H0.849121V11.5936C2.2072 14.295 4.97332 16 7.99812 16Z"
-        fill="#34A853"
-      ></path>
-      <path
-        d="M3.50665 9.53295C3.17154 8.53938 3.17154 7.4635 3.50665 6.46993V4.4093H0.849292C-0.285376 6.66982 -0.285376 9.33306 0.849292 11.5936L3.50665 9.53295Z"
-        fill="#FBBC04"
-      ></path>
-      <path
-        d="M7.99812 3.16589C9.13867 3.14825 10.241 3.57743 11.067 4.36523L13.3511 2.0812C11.9048 0.723121 9.98526 -0.0235266 7.99812 -1.02057e-05C4.97332 -1.02057e-05 2.2072 1.70493 0.849121 4.40932L3.50648 6.46995C4.13848 4.57394 5.91104 3.16589 7.99812 3.16589Z"
-        fill="#EA4335"
-      ></path>
-    </g>
-    <defs>
-      <clipPath id="clip0">
-        <rect width="15.6825" height="16" fill="white"></rect>
-      </clipPath>
-    </defs>
-  </svg>
-);
-export default Register;
+export default SignUp;

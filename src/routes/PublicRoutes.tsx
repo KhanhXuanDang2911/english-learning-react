@@ -18,152 +18,158 @@ import CreateFlashcard from "@/pages/CreateFlashcard";
 import Cart from "@/pages/Cart";
 import DictationLessonsPage from "@/pages/DictationLessons";
 import DictationPage from "@/pages/Dictation";
+import ForceCreatePasswordGuard from "./ForceCreatePasswordGuard";
 
 const PublicRoutes: RouteObject[] = [
   {
-    path: routes.HOME,
-    element: (
-      <MainLayout>
-        <Home />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.NOT_FOUND,
-    element: (
-      <MainLayout>
-        <NotFound />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.COURSES,
-    element: (
-      <MainLayout>
-        <Courses />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.COURSE_DETAIL,
-    element: (
-      <MainLayout>
-        <CourseDetail />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.POSTS,
-    element: (
-      <MainLayout>
-        <Posts />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.POST_DETAIL,
-    element: (
-      <MainLayout>
-        <PostDetail />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.VIDEO_LESSON,
-    element: (
-      <MainLayout showFooter={false}>
-        <Lesson />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.FLASHCARDS,
-    element: (
-      <MainLayout>
-        <Flashcards />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.FLASHCARD_DETAIL,
-    element: (
-      <MainLayout>
-        <FlashcardDetail />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.CREATE_FLASHCARD,
-    element: (
-      <MainLayout>
-        <CreateFlashcard />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.EDIT_FLASHCARD,
-    element: (
-      <MainLayout>
-        <CreateFlashcard />{" "}
-        {/* Reusing CreateFlashcard for edit, will need to pass data */}
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.ACCOUNT,
-    element: (
-      <MainLayout>
-        <Account />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.MY_POSTS,
-    element: (
-      <MainLayout>
-        <MyPosts />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.MY_FLASHCARDS,
-    element: (
-      <MainLayout>
-        <MyFlashcards />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.ORDERS,
-    element: (
-      <MainLayout>
-        <Orders />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.CART,
-    element: (
-      <MainLayout>
-        <Cart />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.DICTATION_LESSONS, // Route for the list of dictation lessons
-    element: (
-      <MainLayout>
-        <DictationLessonsPage />
-      </MainLayout>
-    ),
-  },
-  {
-    path: routes.DICTATION_DETAIL, // Route for a specific dictation lesson
-    element: (
-      <MainLayout>
-        <DictationPage />
-      </MainLayout>
-    ),
+    element: <ForceCreatePasswordGuard />,
+    children: [
+      {
+        path: routes.HOME,
+        element: (
+          <MainLayout>
+            <Home />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.NOT_FOUND,
+        element: (
+          <MainLayout>
+            <NotFound />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.COURSES,
+        element: (
+          <MainLayout>
+            <Courses />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.COURSE_DETAIL,
+        element: (
+          <MainLayout>
+            <CourseDetail />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.POSTS,
+        element: (
+          <MainLayout>
+            <Posts />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.POST_DETAIL,
+        element: (
+          <MainLayout>
+            <PostDetail />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.VIDEO_LESSON,
+        element: (
+          <MainLayout showFooter={false}>
+            <Lesson />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.FLASHCARDS,
+        element: (
+          <MainLayout>
+            <Flashcards />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.FLASHCARD_DETAIL,
+        element: (
+          <MainLayout>
+            <FlashcardDetail />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.CREATE_FLASHCARD,
+        element: (
+          <MainLayout>
+            <CreateFlashcard />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.EDIT_FLASHCARD,
+        element: (
+          <MainLayout>
+            <CreateFlashcard />{" "}
+            {/* Reusing CreateFlashcard for edit, will need to pass data */}
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.ACCOUNT,
+        element: (
+          <MainLayout>
+            <Account />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.MY_POSTS,
+        element: (
+          <MainLayout>
+            <MyPosts />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.MY_FLASHCARDS,
+        element: (
+          <MainLayout>
+            <MyFlashcards />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.ORDERS,
+        element: (
+          <MainLayout>
+            <Orders />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.CART,
+        element: (
+          <MainLayout>
+            <Cart />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.DICTATION_LESSONS, // Route for the list of dictation lessons
+        element: (
+          <MainLayout>
+            <DictationLessonsPage />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.DICTATION_DETAIL, // Route for a specific dictation lesson
+        element: (
+          <MainLayout>
+            <DictationPage />
+          </MainLayout>
+        ),
+      },
+    ],
   },
 ];
 

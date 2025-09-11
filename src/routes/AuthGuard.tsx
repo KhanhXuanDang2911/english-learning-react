@@ -1,11 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import routes from "./routes.const";
+import useAuth from "@/context/AuthContext";
 
-interface AuthGuardProps {
-  children: React.ReactNode;
-}
-
-export default function AuthGuard({ children }: AuthGuardProps) {
-  const isAuthenticated = true;
-  return isAuthenticated ? <>{children}</> : <Navigate to={routes.LOGIN} />;
+export default function AuthGuard() {
+  const { isAuthenticated } = useAuth().state;
+  return isAuthenticated ? <Outlet /> : <Navigate to={routes.SIGN_IN} />;
 }

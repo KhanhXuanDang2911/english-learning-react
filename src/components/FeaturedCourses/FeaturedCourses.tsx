@@ -3,6 +3,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { ArrowRight } from "lucide-react";
 import CourseItem from "../CourseItem";
+import AnimatedBackground from "./AnimatedBackground";
 
 export interface Course {
   id: string;
@@ -28,7 +29,7 @@ const courses: Course[] = [
     summary:
       "Khoá học giúp bạn xây dựng nền tảng giao tiếp tiếng Anh cơ bản, tự tin nói chuyện trong các tình huống hàng ngày.",
     label: "Cơ bản",
-    instructor: "Nguyễn Văn A",
+    instructor: "Nguyễn Mai Phương",
     published: "20 Tháng 7, 2025",
     url: "#",
     image:
@@ -45,7 +46,7 @@ const courses: Course[] = [
     summary:
       "Khoá học luyện thi TOEIC với lộ trình rõ ràng, tài liệu cập nhật mới nhất, cam kết đầu ra.",
     label: "TOEIC",
-    instructor: "Trần Thị B",
+    instructor: "Trần Văn Tùng",
     published: "18 Tháng 7, 2025",
     url: "#",
     image:
@@ -62,7 +63,7 @@ const courses: Course[] = [
     summary:
       "Nâng cao vốn từ vựng chuyên ngành, giao tiếp hiệu quả trong môi trường công sở quốc tế.",
     label: "Từ vựng",
-    instructor: "Lê Văn C",
+    instructor: "Mai Văn Hà",
     published: "15 Tháng 7, 2025",
     url: "#",
     image:
@@ -79,7 +80,7 @@ const courses: Course[] = [
     summary:
       "Nâng cao vốn từ vựng chuyên ngành, giao tiếp hiệu quả trong môi trường công sở quốc tế.",
     label: "Từ vựng",
-    instructor: "Lê Văn C",
+    instructor: "Dương Đình Hoàng",
     published: "15 Tháng 7, 2025",
     url: "#",
     image:
@@ -94,34 +95,59 @@ const courses: Course[] = [
 
 const FeaturedCourses = () => {
   return (
-    <section className="py-32 main-layout">
-      <div className="container mx-auto flex flex-col items-center gap-12 lg:px-10">
-        <div className="text-center">
-          <Badge className="mb-6 bg-[#155e94] text-white">
-            Khoá học nổi bật
-          </Badge>
-          <h2 className="mb-3 text-3xl font-semibold text-pretty md:mb-4 md:text-4xl lg:mb-6 lg:max-w-3xl lg:text-5xl text-[#155e94]">
-            Khoá học nổi bật
-          </h2>
-          <p className="mb-4 text-muted-foreground md:text-base lg:max-w-2xl lg:text-lg">
-            Các khoá học chất lượng, cập nhật mới nhất, giúp bạn chinh phục
-            tiếng Anh hiệu quả.
-          </p>
-          <Button
-            variant="link"
-            className="w-full sm:w-auto text-[#155e94]"
-            asChild
+    <section className="relative py-32 main-layout overflow-hidden bg-gradient-to-br from-slate-50 via-sky-50/30 to-blue-50/20">
+      <AnimatedBackground />
+
+      <div className="relative z-10 container mx-auto flex flex-col items-center gap-12 lg:px-10">
+        {/* Header */}
+        <div className="relative w-full flex flex-col items-center text-center">
+          {/* Badge */}
+          <div className="relative mb-6">
+            <Badge className="relative bg-gradient-to-r from-[#155e94] to-blue-900 text-white text-[16px] px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <span className="relative z-10">Khám phá ngay</span>
+            </Badge>
+          </div>
+
+          {/* Title */}
+          <div className="relative mb-3 md:mb-4 lg:mb-6">
+            <h2 className="text-5xl font-bold md:text-4xl lg:max-w-3xl lg:text-5xl bg-gradient-to-r  bg-primary-color bg-clip-text text-transparent animate-fade-in">
+              Các khoá học nổi bật
+            </h2>
+            <div
+              className="absolute inset-0 text-5xl font-bold md:text-4xl lg:max-w-3xl lg:text-5xl text-[#155e94]/15 blur-md -z-10"
+              style={{ animationDelay: "0.2s" }}
+            >
+              Hành trình học tập nổi bật
+            </div>
+          </div>
+
+          {/* Subtitle */}
+          <p
+            className="mb-6 text-muted-foreground md:text-base lg:max-w-2xl lg:text-lg animate-slide-up"
+            style={{ animationDelay: "0.4s" }}
           >
-            <Link to="#">
-              Xem tất cả khoá học
-              <ArrowRight className="ml-2 size-4" />
-            </Link>
-          </Button>
+            Những khoá học chất lượng, được lựa chọn đặc biệt để giúp bạn chinh
+            phục tiếng Anh hiệu quả hơn.
+          </p>
+
+          {/* Button */}
+          <div className="animate-slide-up" style={{ animationDelay: "0.6s" }}>
+            <Button
+              className="rounded-full bg-gradient-to-r bg-primary-color text-white px-8 py-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+              asChild
+            >
+              <Link to="#" className="flex items-center font-semibold">
+                Xem tất cả khoá học
+                <ArrowRight className="ml-2 size-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Link>
+            </Button>
+          </div>
         </div>
 
+        {/* Courses grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {courses.map((course) => (
-            <CourseItem course={course} />
+            <CourseItem key={course.id} course={course} />
           ))}
         </div>
       </div>

@@ -16,11 +16,14 @@ import {
   Plus,
   BookOpen,
   ChevronDown,
-  Users,
-  Star,
+  Grid3X3,
+  List,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import routes from "@/routes/routes.const";
+import FlashcardItem from "@/components/FlashcardItem";
+import DynamicPagination from "@/components/DynamicPagination";
 
 const categories = [
   "Tất cả",
@@ -175,6 +178,11 @@ export default function Flashcards() {
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const handlePageChange = (page: number) => {
+    console.log("Do sth with " + page);
+  };
 
   const filteredFlashcards = flashcards.filter((flashcard) => {
     const matchesSearch =
@@ -208,117 +216,85 @@ export default function Flashcards() {
     }
   });
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`h-3 w-3 ${
-          i < Math.floor(rating)
-            ? "text-yellow-400 fill-yellow-400"
-            : "text-gray-300"
-        }`}
-      />
-    ));
-  };
+  const currentPage = 1;
+  const itemsPerPage = 10;
+  const totalResults = sortedFlashcards.length;
+  const startResult = (currentPage - 1) * itemsPerPage + 1;
+  const endResult = Math.min(currentPage * itemsPerPage, totalResults);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10">
+        {/* Base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+
+        {/* Animated shapes */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute top-40 right-20 w-96 h-96 bg-gradient-to-r from-green-400/15 to-blue-400/15 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute bottom-20 left-1/3 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "4s" }}
+        ></div>
+
+        {/* Geometric patterns */}
+        <div className="absolute top-1/4 right-1/4 w-32 h-32 border border-blue-200/30 rounded-lg rotate-45 animate-spin-slow"></div>
+        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 border border-purple-200/30 rounded-full animate-spin-reverse"></div>
+      </div>
+
       {/* Hero Section */}
-      <div className="bg-primary-color text-white py-16">
-        <div className="main-layout">
+      <div className="relative bg-gradient-to-r bg-primary-color text-white py-20">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative main-layout">
           <div className="max-w-4xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
               Flashcard từ vựng
+              <span className="block text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">
+                tiếng Anh
+              </span>
             </h1>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-xl mb-8 opacity-90 animate-slide-up">
               Khám phá {flashcards.length}+ bộ flashcard từ vựng tiếng Anh chất
               lượng cao
             </p>
 
             {/* Search Bar */}
-            <div className="relative max-w-2xl">
+            <div
+              className="relative max-w-2xl animate-slide-up"
+              style={{ animationDelay: "0.3s" }}
+            >
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
                 type="text"
                 placeholder="Tìm kiếm flashcard, tác giả..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-4 py-3 text-lg bg-white text-gray-900 border-0 rounded-lg"
+                className="pl-12 pr-4 py-4 text-[16px] bg-white/95 backdrop-blur-sm text-gray-900 border-0 rounded-xl shadow-lg focus:shadow-xl transition-all duration-300"
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="main-layout py-8">
+      <div className="relative main-layout py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters */}
-          <div className="lg:w-80">
-            <Card className="sticky top-8">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">Bộ lọc</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="lg:hidden"
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Lọc
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-
-                <div
-                  className={`space-y-6 ${
-                    showFilters ? "block" : "hidden lg:block"
-                  }`}
-                >
-                  {/* Category Filter */}
-                  <div>
-                    <h4 className="font-medium mb-3">Chủ đề</h4>
-                    <div className="space-y-2">
-                      {categories.map((category) => (
-                        <button
-                          key={category}
-                          onClick={() => setSelectedCategory(category)}
-                          className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                            selectedCategory === category
-                              ? "bg-primary-color text-white"
-                              : "hover:bg-gray-100"
-                          }`}
-                        >
-                          {category}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Clear Filters */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-transparent"
-                    onClick={() => {
-                      setSelectedCategory("Tất cả");
-                      setSearchTerm("");
-                    }}
-                  >
-                    Xóa bộ lọc
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Main Content */}
           <div className="flex-1">
             {/* Results Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start mb-6">
+              {/* Left: số lượng + showing */}
               <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  {sortedFlashcards.length} bộ flashcard
-                </h2>
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold">
+                    {sortedFlashcards.length} bộ flashcard
+                  </h2>
+                  <div className="text-sm text-gray-600 bg-white/70 px-3 py-1 rounded-full">
+                    Showing {startResult}-{endResult} of {totalResults} results
+                  </div>
+                </div>
                 {searchTerm && (
                   <p className="text-gray-600">
                     Kết quả tìm kiếm cho "{searchTerm}"
@@ -326,10 +302,12 @@ export default function Flashcards() {
                 )}
               </div>
 
-              <div className="flex items-center gap-4 mt-4 sm:mt-0">
+              {/* Right: nút tạo, view toggle, sort */}
+              <div className="flex flex-wrap justify-start lg:justify-end gap-3">
+                {/* Create Button */}
                 <Button
                   asChild
-                  className="bg-primary-color hover:bg-hover-primary-color"
+                  className="bg-gradient-to-r bg-primary-color text-white shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   <Link to={routes.CREATE_FLASHCARD}>
                     <Plus className="h-4 w-4 mr-2" />
@@ -337,10 +315,39 @@ export default function Flashcards() {
                   </Link>
                 </Button>
 
+                {/* View Toggle */}
+                <div className="flex items-center bg-white/70 rounded-lg p-1 shadow-sm">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className={`px-3 py-2 ${
+                      viewMode === "grid"
+                        ? "bg-primary-color text-white shadow-sm"
+                        : "hover:bg-white/50"
+                    }`}
+                  >
+                    <Grid3X3 className="h-4 w-4 mr-1" /> Grid
+                  </Button>
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className={`px-3 py-2 ${
+                      viewMode === "list"
+                        ? "bg-primary-color text-white shadow-sm"
+                        : "hover:bg-white/50"
+                    }`}
+                  >
+                    <List className="h-4 w-4 mr-1" /> List
+                  </Button>
+                </div>
+
+                {/* Sort */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">Sắp xếp:</span>
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-44 bg-white/70 border-white/30">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -358,22 +365,28 @@ export default function Flashcards() {
             {/* Active Filters */}
             <div className="flex flex-wrap gap-2 mb-6">
               {selectedCategory !== "Tất cả" && (
-                <Badge variant="secondary" className="px-3 py-1">
+                <Badge
+                  variant="secondary"
+                  className="px-3 py-1 bg-white/70 hover:bg-white/90 transition-colors"
+                >
                   {selectedCategory}
                   <button
                     onClick={() => setSelectedCategory("Tất cả")}
-                    className="ml-2 hover:text-red-500"
+                    className="ml-2 hover:text-red-500 transition-colors"
                   >
                     ×
                   </button>
                 </Badge>
               )}
               {searchTerm && (
-                <Badge variant="secondary" className="px-3 py-1">
+                <Badge
+                  variant="secondary"
+                  className="px-3 py-1 bg-white/70 hover:bg-white/90 transition-colors"
+                >
                   "{searchTerm}"
                   <button
                     onClick={() => setSearchTerm("")}
-                    className="ml-2 hover:text-red-500"
+                    className="ml-2 hover:text-red-500 transition-colors"
                   >
                     ×
                   </button>
@@ -381,105 +394,23 @@ export default function Flashcards() {
               )}
             </div>
 
-            {/* Flashcards Grid */}
+            {/* Flashcards Grid/List */}
             {sortedFlashcards.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedFlashcards.map((flashcard) => (
-                  <Card
+              <div
+                className={`transition-all duration-500 ${
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "space-y-4"
+                }`}
+              >
+                {sortedFlashcards.map((flashcard, index) => (
+                  <div
                     key={flashcard.id}
-                    className="overflow-hidden hover:shadow-lg transition-shadow"
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <Link
-                      to={`${routes.FLASHCARD_DETAIL.replace(
-                        ":id",
-                        flashcard.id
-                      )}`}
-                    >
-                      <div className="aspect-video w-full overflow-hidden">
-                        <img
-                          src={flashcard.thumbnail || "/placeholder.svg"}
-                          alt={flashcard.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    </Link>
-
-                    <CardContent className="p-4">
-                      <div className="mb-2">
-                        <Badge className="bg-primary-color text-xs">
-                          {flashcard.category}
-                        </Badge>
-                      </div>
-
-                      <h3 className="font-semibold text-lg mb-2 line-clamp-2 hover:text-primary-color">
-                        <Link
-                          to={`${routes.FLASHCARD_DETAIL.replace(
-                            ":id",
-                            flashcard.id
-                          )}`}
-                        >
-                          {flashcard.title}
-                        </Link>
-                      </h3>
-
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {flashcard.description}
-                      </p>
-
-                      <div className="flex items-center gap-2 mb-3">
-                        <img
-                          src={flashcard.authorAvatar || "/placeholder.svg"}
-                          alt={flashcard.author}
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                        <span className="text-sm text-gray-600">
-                          {flashcard.author}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1">
-                            <BookOpen className="h-4 w-4" />
-                            <span>{flashcard.cardCount} thẻ</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            <span>{flashcard.studyCount.toLocaleString()}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <div className="flex">
-                            {renderStars(flashcard.rating)}
-                          </div>
-                          <span className="text-sm font-medium">
-                            {flashcard.rating}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            ({flashcard.ratingCount})
-                          </span>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="bg-transparent"
-                          asChild
-                        >
-                          <Link
-                            to={`${routes.FLASHCARD_DETAIL.replace(
-                              ":id",
-                              flashcard.id
-                            )}`}
-                          >
-                            Học ngay
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <FlashcardItem flashcard={flashcard} viewMode={viewMode} />
+                  </div>
                 ))}
               </div>
             ) : (
@@ -498,18 +429,25 @@ export default function Flashcards() {
                     setSearchTerm("");
                     setSelectedCategory("Tất cả");
                   }}
+                  className="bg-primary-color hover:bg-hover-primary-color"
                 >
                   Xóa bộ lọc
                 </Button>
               </div>
             )}
 
-            {/* Load More */}
+            {/* Pagination */}
             {sortedFlashcards.length > 0 && (
-              <div className="text-center mt-12">
-                <Button variant="outline" size="lg">
-                  Xem thêm flashcard
-                </Button>
+              <div className="mt-12">
+                <DynamicPagination
+                  currentPage={1}
+                  totalPages={10}
+                  onPageChange={handlePageChange}
+                  maxVisiblePages={3}
+                  showFirstLast={false}
+                  buttonClassName="hover:bg-white/70 transition-all duration-200"
+                  activeButtonClassName="bg-primary-color text-white hover:bg-hover-primary-color shadow-md"
+                />
               </div>
             )}
           </div>

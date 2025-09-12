@@ -16,9 +16,10 @@ import Orders from "@/pages/Orders";
 import FlashcardDetail from "@/pages/FlashcardDetail";
 import CreateFlashcard from "@/pages/CreateFlashcard";
 import Cart from "@/pages/Cart";
-import DictationLessonsPage from "@/pages/DictationLessons";
-import DictationPage from "@/pages/Dictation";
 import ForceCreatePasswordGuard from "./ForceCreatePasswordGuard";
+import DictationLessonDetail from "@/pages/DictationLessonDetail";
+import DictationTopics from "@/pages/DictationTopics";
+import DictationLessons from "@/pages/DictationLessons";
 
 const PublicRoutes: RouteObject[] = [
   {
@@ -154,18 +155,26 @@ const PublicRoutes: RouteObject[] = [
         ),
       },
       {
-        path: routes.DICTATION_LESSONS, // Route for the list of dictation lessons
+        path: routes.DICTATION_TOPICS, // Route for the list of dictation lessons
         element: (
           <MainLayout>
-            <DictationLessonsPage />
+            <DictationTopics />
           </MainLayout>
         ),
       },
       {
-        path: routes.DICTATION_DETAIL, // Route for a specific dictation lesson
+        path: routes.DICTATION_LESSONS, // Route for the list of dictation lessons
         element: (
           <MainLayout>
-            <DictationPage />
+            <DictationLessons id="toeic-listening" />
+          </MainLayout>
+        ),
+      },
+      {
+        path: routes.DICTATION_LESSON_DETAIL, // Route for a specific dictation lesson
+        element: (
+          <MainLayout>
+            <DictationLessonDetail />
           </MainLayout>
         ),
       },

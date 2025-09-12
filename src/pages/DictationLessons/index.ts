@@ -1,3 +1,3 @@
-import DictationLessonsPage from "./DictationLessons";
+import DictationLessons from "./DictationLessons";
 
-export default DictationLessonsPage;
+export default DictationLessons;

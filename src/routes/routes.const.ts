@@ -19,8 +19,9 @@ const routes = {
   MY_POSTS: "/my-posts",
   MY_FLASHCARDS: "/my-flashcards",
   ORDERS: "/orders",
-  DICTATION_LESSONS: "/dictation", // New route for dictation lessons list
-  DICTATION_DETAIL: "/dictation/:id", // Updated route for dictation detail page
+  DICTATION_TOPICS: "/dictation/topics", // New route for dictation lessons list
+  DICTATION_LESSONS: "/dictation/lessons/:id", // Updated route for dictation detail page
+  DICTATION_LESSON_DETAIL: "/dictation/lesson/:id",
 
   // Admin page
   ADMIN_DASHBOARD: "/admin",

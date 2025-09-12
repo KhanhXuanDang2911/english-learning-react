@@ -1,60 +1,67 @@
-"use client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { BookOpenText, Gem } from "lucide-react";
 
-import type React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
-import { Link } from "react-router-dom";
-import routes from "@/routes/routes.const";
-
-interface DictationLessonCardProps {
-  lesson: {
-    id: string;
-    title: string;
-    description: string;
-    difficulty: string;
-    duration: string;
-    imageUrl: string;
-  };
+interface DictationLesson {
+  id: string;
+  title: string;
+  subtitle: string;
+  parts: number;
+  vocabLevel: string;
+  type: "Conversation" | "Short Talk";
 }
 
-const DictationLessonCard: React.FC<DictationLessonCardProps> = ({
+interface DictationLessonCardProps {
+  lesson: DictationLesson;
+  onClick?: (lessonId: string) => void;
+}
+
+export default function DictationLessonCard({
   lesson,
-}) => {
+  onClick,
+}: DictationLessonCardProps) {
   return (
-    <Card className="flex flex-col overflow-hidden transition-all hover:shadow-lg">
-      <div className="relative w-full h-48 overflow-hidden">
-        <img
-          src={lesson.imageUrl || "/placeholder.svg"}
-          alt={lesson.title}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-4 left-4 text-white">
-          <CardTitle className="text-xl">{lesson.title}</CardTitle>
-          <CardDescription className="text-sm text-gray-200">
-            {lesson.description}
-          </CardDescription>
+    <Card
+      className="group cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-1 bg-white border border-gray-200"
+      onClick={() => onClick?.(lesson.id)}
+    >
+      <CardContent className="p-4 space-y-3">
+        {/* Title + Subtitle */}
+        <div>
+          <h4
+            className={`font-medium ${
+              lesson.type === "Conversation"
+                ? "text-blue-600"
+                : "text-purple-600"
+            } hover:underline transition-colors`}
+          >
+            {lesson.title}
+          </h4>
+          <p className="text-sm text-gray-600">{lesson.subtitle}</p>
         </div>
-      </div>
-      <CardContent className="p-4 flex-grow">
-        <div className="flex justify-between items-center text-sm text-muted-foreground mb-3">
-          <span>Độ khó: {lesson.difficulty}</span>
-          <span>Thời lượng: {lesson.duration}</span>
+
+        {/* Info badges */}
+        <div className="flex flex-wrap gap-2 text-xs">
+          <Badge variant="outline" className="flex items-center gap-1">
+            <BookOpenText className="w-3 h-3" />
+            {lesson.parts} parts
+          </Badge>
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Gem className="w-3 h-3" />
+            {lesson.vocabLevel}
+          </Badge>
+          <Badge
+            variant="secondary"
+            className={`${
+              lesson.type === "Conversation"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-purple-100 text-purple-700"
+            }`}
+          >
+            {lesson.type}
+          </Badge>
         </div>
-        <Link to={routes.DICTATION_DETAIL.replace(":id", lesson.id)}>
-          <Button className="w-full bg-[#155e94] hover:bg-[#155e94]/90 text-white">
-            <Play className="h-4 w-4 mr-2" /> Bắt đầu luyện tập
-          </Button>
-        </Link>
       </CardContent>
     </Card>
   );
-};
-
-export default DictationLessonCard;
+}

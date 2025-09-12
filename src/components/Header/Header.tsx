@@ -89,8 +89,9 @@ export default function Header() {
   });
 
   return (
-    <header className="border border-b-primary-color">
+    <header className="sticky top-0 z-50 border-b border-primary-color bg-white/80 backdrop-blur-md shadow-sm">
       <div className="main-layout flex h-20 shrink-0 items-center">
+        {/* Mobile menu */}
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -103,50 +104,23 @@ export default function Header() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-3">
-            <Link to={routes.HOME}>
-              <img
-                src="/images/logo_final.png"
-                alt="Logo"
-                className="h-10 w-10"
-              />
-              <span className="sr-only">K-English</span>
+            <Link to={routes.HOME} className="flex items-center gap-2 mb-4">
+              <img src="/images/student.png" alt="Logo" className="h-10 w-10" />
+              <span className="font-bold text-primary-color">K-English</span>
             </Link>
-            <div className="grid gap-2 py-6">
-              <Link
-                to={routes.HOME}
-                className="flex w-full items-center py-2 text-[14px] font-semibold text-primary-color"
-              >
-                Trang chủ
-              </Link>
-              <Link
-                to={routes.COURSES}
-                className="flex w-full items-center py-2 text-[14px] font-semibold text-primary-color"
-              >
-                Khoá học
-              </Link>
-              <Link
-                to={routes.POSTS}
-                className="flex w-full items-center py-2 text-[14px] font-semibold text-primary-color"
-              >
-                Bài viết
-              </Link>
-              <Link
-                to={routes.FLASHCARDS}
-                className="flex w-full items-center py-2 text-[14px] font-semibold text-primary-color"
-              >
-                Từ vựng
-              </Link>
-              <Link
-                to={routes.DICTATION_LESSONS}
-                className="flex w-full items-center py-2 text-[14px] font-semibold text-primary-color"
-              >
+            <div className="grid gap-2 py-4">
+              <NavLinkMobile to={routes.HOME}>Trang chủ</NavLinkMobile>
+              <NavLinkMobile to={routes.COURSES}>Khoá học</NavLinkMobile>
+              <NavLinkMobile to={routes.POSTS}>Bài viết</NavLinkMobile>
+              <NavLinkMobile to={routes.FLASHCARDS}>Từ vựng</NavLinkMobile>
+              <NavLinkMobile to={routes.DICTATION_TOPICS}>
                 Nghe chép chính tả
-              </Link>
+              </NavLinkMobile>
               {match && (
                 <HashLink
                   smooth
                   to="#contact"
-                  className="flex w-full items-center py-2 text-[14px] font-semibold text-primary-color"
+                  className="flex w-full items-center py-2 text-[14px] font-bold text-primary-color"
                 >
                   Liên hệ
                 </HashLink>
@@ -154,57 +128,34 @@ export default function Header() {
             </div>
           </SheetContent>
         </Sheet>
-        <Link to={routes.HOME} className="mr-6 hidden lg:flex">
-          <img src="/images/logo_final.png" alt="Logo" className="h-10 w-10" />
+
+        {/* Logo desktop */}
+        <Link
+          to={routes.HOME}
+          className="mr-6 hidden lg:flex items-center gap-2"
+        >
+          <img src="/images/student.png" alt="Logo" className="h-10 w-10" />
+          <span className="font-bold text-primary-color text-lg">
+            K-English
+          </span>
         </Link>
+
+        {/* Desktop navigation */}
         <NavigationMenu className="hidden lg:flex">
           <NavigationMenuList>
-            <NavigationMenuLink asChild>
-              <Link
-                to={routes.HOME}
-                className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50"
-              >
-                Trang chủ
-              </Link>
-            </NavigationMenuLink>
-            <NavigationMenuLink asChild>
-              <Link
-                to={routes.COURSES}
-                className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50"
-              >
-                Khoá học
-              </Link>
-            </NavigationMenuLink>
-            <NavigationMenuLink asChild>
-              <Link
-                to={routes.POSTS}
-                className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50"
-              >
-                Bài viết
-              </Link>
-            </NavigationMenuLink>
-            <NavigationMenuLink asChild>
-              <Link
-                to={routes.FLASHCARDS}
-                className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50"
-              >
-                Từ vựng
-              </Link>
-            </NavigationMenuLink>
-            <NavigationMenuLink asChild>
-              <Link
-                to={routes.DICTATION_LESSONS}
-                className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50"
-              >
-                Nghe chép chính tả
-              </Link>
-            </NavigationMenuLink>
+            <NavLinkDesktop to={routes.HOME}>Trang chủ</NavLinkDesktop>
+            <NavLinkDesktop to={routes.COURSES}>Khoá học</NavLinkDesktop>
+            <NavLinkDesktop to={routes.POSTS}>Bài viết</NavLinkDesktop>
+            <NavLinkDesktop to={routes.FLASHCARDS}>Từ vựng</NavLinkDesktop>
+            <NavLinkDesktop to={routes.DICTATION_TOPICS}>
+              Nghe chép chính tả
+            </NavLinkDesktop>
             {match && (
               <NavigationMenuLink asChild>
                 <HashLink
                   smooth
                   to="#contact"
-                  className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50"
+                  className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md px-4 py-2 text-sm font-medium transition-all hover:bg-gray-100 hover:text-gray-900"
                 >
                   Liên hệ
                 </HashLink>
@@ -213,9 +164,11 @@ export default function Header() {
           </NavigationMenuList>
         </NavigationMenu>
 
+        {/* Auth + Cart */}
         <div className="ml-auto flex items-center gap-x-5">
           {isAuthenticated ? (
             <>
+              {/* Giỏ hàng */}
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <Button variant="ghost" size="sm" className="relative">
@@ -295,6 +248,7 @@ export default function Header() {
                 </HoverCardContent>
               </HoverCard>
 
+              {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -312,7 +266,7 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex items-center gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
                       <p className="font-medium">{currentUser.fullName}</p>
                       <p className="w-[200px] truncate text-sm text-muted-foreground">
@@ -363,11 +317,11 @@ export default function Header() {
               </DropdownMenu>
             </>
           ) : (
-            <div>
+            <div className="flex gap-2">
               <Button
                 asChild
                 variant="outline"
-                className="text-primary-color bg-transparent mr-2"
+                className="text-primary-color bg-transparent"
               >
                 <Link to={routes.SIGN_UP}>Đăng ký</Link>
               </Button>
@@ -400,5 +354,41 @@ function MenuIcon(props: React.SVGProps<SVGSVGElement>) {
       <line x1="4" x2="20" y1="6" y2="6" />
       <line x1="4" x2="20" y1="18" y2="18" />
     </svg>
+  );
+}
+
+function NavLinkDesktop({
+  to,
+  children,
+}: {
+  to: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <NavigationMenuLink asChild>
+      <Link
+        to={to}
+        className="group inline-flex h-9 w-max items-center text-primary-color justify-center rounded-md px-4 py-2 text-sm font-medium transition-all hover:bg-gray-100 hover:text-gray-900"
+      >
+        {children}
+      </Link>
+    </NavigationMenuLink>
+  );
+}
+
+function NavLinkMobile({
+  to,
+  children,
+}: {
+  to: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className="flex w-full items-center py-2 text-[14px] font-bold text-primary-color hover:bg-gray-50 rounded-md px-2 transition-colors"
+    >
+      {children}
+    </Link>
   );
 }

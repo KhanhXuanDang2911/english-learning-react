@@ -15,16 +15,13 @@ import {
   Filter,
   BookOpen,
   ChevronDown,
-  Calendar,
-  User,
-  Eye,
+  Grid3X3,
+  List,
+  SlidersHorizontal,
 } from "lucide-react";
 import PostItem from "@/components/PostItem";
 import type { Post } from "@/components/FeaturedPosts/FeaturedPosts";
 import DynamicPagination from "@/components/DynamicPagination";
-import SpecialPostItem from "@/components/SpecialPostItem/SpecialPostItem";
-import SpecialPostItemSkeleton from "@/components/Skeleton/SpecialPostItemSkeleton";
-import PostItemSkeleton from "@/components/Skeleton/PostItemSkeleton";
 
 const categories = [
   "Tất cả",
@@ -136,56 +133,99 @@ export default function Posts() {
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   const handlePageChange = (page: number) => {
     console.log("Do sth with " + page);
   };
 
+  const currentPage = 1;
+  const itemsPerPage = 10;
+  const totalResults = allPosts.length;
+  const startResult = (currentPage - 1) * itemsPerPage + 1;
+  const endResult = Math.min(currentPage * itemsPerPage, totalResults);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10">
+        {/* Base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+
+        {/* Animated shapes */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute top-40 right-20 w-96 h-96 bg-gradient-to-r from-green-400/15 to-blue-400/15 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute bottom-20 left-1/3 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "4s" }}
+        ></div>
+
+        {/* Geometric patterns */}
+        <div className="absolute top-1/4 right-1/4 w-32 h-32 border border-blue-200/30 rounded-lg rotate-45 animate-spin-slow"></div>
+        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 border border-purple-200/30 rounded-full animate-spin-reverse"></div>
+      </div>
+
       {/* Hero Section */}
-      <div className="bg-primary-color text-white py-16">
-        <div className="main-layout">
+      <div className="relative bg-gradient-to-r bg-primary-color text-white py-20">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative main-layout">
           <div className="max-w-4xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
               Blog tiếng Anh
+              <span className="block text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">
+                chất lượng cao
+              </span>
             </h1>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-xl mb-8 opacity-90 animate-slide-up">
               Khám phá {allPosts.length}+ bài viết hữu ích về học tiếng Anh từ
               các chuyên gia
             </p>
 
             {/* Search Bar */}
-            <div className="relative max-w-2xl">
+            <div
+              className="relative max-w-2xl animate-slide-up"
+              style={{ animationDelay: "0.3s" }}
+            >
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
                 type="text"
                 placeholder="Tìm kiếm bài viết, tác giả..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-4 py-3 text-lg bg-white text-gray-900 border-0 rounded-lg"
+                className="pl-12 pr-4 py-4 text-[16px] bg-white/95 backdrop-blur-sm text-gray-900 border-0 rounded-xl shadow-lg focus:shadow-xl transition-all duration-300"
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="main-layout py-8">
+      <div className="relative main-layout py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
           <div className="lg:w-80">
-            <Card className="sticky top-8">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">Bộ lọc</h3>
+            <Card className="sticky top-8 glass-effect border-white/20 shadow-xl">
+              <CardContent className="lg:p-6">
+                <div className="flex items-center justify-between lg:mb-6">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <SlidersHorizontal className="h-5 w-5 text-primary-color" />
+                    Bộ lọc
+                  </h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="lg:hidden"
+                    className="lg:hidden hover:bg-white/50"
                   >
                     <Filter className="h-4 w-4 mr-2" />
                     Lọc
-                    <ChevronDown className="h-4 w-4 ml-2" />
+                    <ChevronDown
+                      className={`h-4 w-4 ml-2 transition-transform ${
+                        showFilters ? "rotate-180" : ""
+                      }`}
+                    />
                   </Button>
                 </div>
 
@@ -196,16 +236,16 @@ export default function Posts() {
                 >
                   {/* Category Filter */}
                   <div>
-                    <h4 className="font-medium mb-3">Danh mục</h4>
+                    <h4 className="font-medium mt-7 lg:mt-0 mb-3">Danh mục</h4>
                     <div className="space-y-2">
                       {categories.map((category) => (
                         <button
                           key={category}
                           onClick={() => setSelectedCategory(category)}
-                          className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                             selectedCategory === category
-                              ? "bg-primary-color text-white"
-                              : "hover:bg-gray-100"
+                              ? "bg-primary-color text-white shadow-md"
+                              : "hover:bg-white/50 hover:shadow-sm"
                           }`}
                         >
                           {category}
@@ -213,6 +253,18 @@ export default function Posts() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Clear Filters */}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-white/50 border-white/30 hover:bg-white/70 cursor-pointer transition-all duration-300"
+                    onClick={() => {
+                      setSelectedCategory("Tất cả");
+                      setSearchTerm("");
+                    }}
+                  >
+                    Xóa bộ lọc
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -221,11 +273,16 @@ export default function Posts() {
           {/* Main Content */}
           <div className="flex-1">
             {/* Results Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4 flex-wrap">
               <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  {allPosts.length} bài viết
-                </h2>
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold">
+                    {allPosts.length} bài viết
+                  </h2>
+                  <div className="text-sm text-gray-600 bg-white/70 px-3 py-1 rounded-full whitespace-nowrap">
+                    Showing {startResult}-{endResult} of {totalResults} results
+                  </div>
+                </div>
                 {searchTerm && (
                   <p className="text-gray-600">
                     Kết quả tìm kiếm cho "{searchTerm}"
@@ -233,42 +290,81 @@ export default function Posts() {
                 )}
               </div>
 
-              <div className="flex items-center gap-4 mt-4 sm:mt-0">
-                <span className="text-sm text-gray-600">Sắp xếp theo:</span>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sortOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex flex-wrap items-center gap-4">
+                {/* View Toggle */}
+                <div className="flex items-center bg-white/70 rounded-lg p-1 shadow-sm flex-shrink-0">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className={`px-3 py-2 ${
+                      viewMode === "grid"
+                        ? "bg-primary-color text-white shadow-sm"
+                        : "hover:bg-white/50"
+                    }`}
+                  >
+                    <Grid3X3 className="h-4 w-4 mr-1" /> Grid
+                  </Button>
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className={`px-3 py-2 ${
+                      viewMode === "list"
+                        ? "bg-primary-color text-white shadow-sm"
+                        : "hover:bg-white/50"
+                    }`}
+                  >
+                    <List className="h-4 w-4 mr-1" /> List
+                  </Button>
+                </div>
+
+                {/* Sort */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-sm text-gray-600 whitespace-nowrap">
+                    Sắp xếp:
+                  </span>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-48 bg-white/70 border-white/30">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
             {/* Active Filters */}
             <div className="flex flex-wrap gap-2 mb-6">
               {selectedCategory !== "Tất cả" && (
-                <Badge variant="secondary" className="px-3 py-1">
+                <Badge
+                  variant="secondary"
+                  className="px-3 py-1 bg-white/70 hover:bg-white/90 transition-colors"
+                >
                   {selectedCategory}
                   <button
                     onClick={() => setSelectedCategory("Tất cả")}
-                    className="ml-2 hover:text-red-500"
+                    className="ml-2 hover:text-red-500 transition-colors"
                   >
                     ×
                   </button>
                 </Badge>
               )}
               {searchTerm && (
-                <Badge variant="secondary" className="px-3 py-1">
+                <Badge
+                  variant="secondary"
+                  className="px-3 py-1 bg-white/70 hover:bg-white/90 transition-colors"
+                >
                   "{searchTerm}"
                   <button
                     onClick={() => setSearchTerm("")}
-                    className="ml-2 hover:text-red-500"
+                    className="ml-2 hover:text-red-500 transition-colors"
                   >
                     ×
                   </button>
@@ -276,25 +372,24 @@ export default function Posts() {
               )}
             </div>
 
-            {/* Posts Grid */}
+            {/* Posts Grid/List */}
             {allPosts.length > 0 ? (
-              <div className="space-y-6">
-                {/* Featured Post */}
-                {allPosts.length > 0 && (
-                  <SpecialPostItem
-                    key={crypto.randomUUID()}
-                    post={allPosts[0]}
-                  />
-                  // <SpecialPostItemSkeleton key={allPosts[0].id} />
-                )}
-
-                {/* Regular Posts Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {allPosts.slice(1).map((post) => (
-                    <PostItem key={crypto.randomUUID()} post={post} />
-                    // <PostItemSkeleton key={post.id} />
-                  ))}
-                </div>
+              <div
+                className={`transition-all duration-500 ${
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "space-y-4"
+                }`}
+              >
+                {allPosts.map((post, index) => (
+                  <div
+                    key={post.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <PostItem post={post} viewMode={viewMode} />
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="text-center py-12">
@@ -307,20 +402,29 @@ export default function Posts() {
                 <p className="text-gray-600 mb-4">
                   Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
                 </p>
+                <Button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedCategory("Tất cả");
+                  }}
+                  className="bg-primary-color hover:bg-hover-primary-color"
+                >
+                  Xóa bộ lọc
+                </Button>
               </div>
             )}
 
-            {/* Load More */}
+            {/* Pagination */}
             {allPosts.length > 0 && (
-              <div className="mt-8">
+              <div className="mt-12">
                 <DynamicPagination
                   currentPage={1}
                   totalPages={10}
                   onPageChange={handlePageChange}
                   maxVisiblePages={3}
                   showFirstLast={false}
-                  buttonClassName="hover:bg-slate-200"
-                  activeButtonClassName="bg-primary-color text-white hover:bg-hover-primary-color hover:text-white"
+                  buttonClassName="hover:bg-white/70 transition-all duration-200"
+                  activeButtonClassName="bg-primary-color text-white hover:bg-hover-primary-color shadow-md"
                 />
               </div>
             )}

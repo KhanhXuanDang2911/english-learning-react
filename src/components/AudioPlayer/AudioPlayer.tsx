@@ -214,100 +214,120 @@ const AudioPlayer = React.forwardRef<AudioPlayerRef, AudioPlayerProps>(
           preload="metadata"
         />
 
-        <div className="flex items-center justify-between gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={togglePlayPause}
-            className="text-white hover:bg-white/20"
-          >
-            {isPlaying ? (
-              <Pause className="h-6 w-6" />
-            ) : (
-              <Play className="h-6 w-6" />
-            )}
-            <span className="sr-only">{isPlaying ? "Tạm dừng" : "Phát"}</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleRewind}
-            className="text-white hover:bg-white/20"
-          >
-            <Rewind className="h-6 w-6" />
-            <span className="sr-only">Tua lại 3 giây</span>
-          </Button>
-
-          <Slider
-            value={[currentTime]}
-            max={duration}
-            step={0.1}
-            onValueChange={handleProgressChange}
-            className="flex-grow cursor-pointer [&_[data-orientation=horizontal]]:bg-white/30 [&_[data-orientation=horizontal]_span]:bg-[#155e94] [&_[role=slider]]:border-[#155e94] [&_[role=slider]]:bg-white [&_[role=slider]]:shadow-lg"
-          />
-
-          <div className="text-white text-sm font-medium min-w-[80px] text-right">
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+        {/* Wrapper */}
+        <div className="flex flex-col gap-2 w-full">
+          {/* Hàng 1: Nút điều khiển + progress */}
+          <div className="flex items-center gap-2 w-full">
+            {/* Nút điều khiển */}
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={togglePlayPause}
                 className="text-white hover:bg-white/20"
               >
-                {playbackRate}x<span className="sr-only">Tốc độ phát</span>
+                {isPlaying ? (
+                  <Pause className="h-6 w-6" />
+                ) : (
+                  <Play className="h-6 w-6" />
+                )}
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-24">
-              {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((rate) => (
-                <DropdownMenuItem
-                  key={rate}
-                  onClick={() => handlePlaybackRateChange(rate)}
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleRewind}
+                className="text-white hover:bg-white/20"
+              >
+                <Rewind className="h-6 w-6" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLoopToggle}
+                className={cn(
+                  "text-white hover:bg-white/20",
+                  loop && "bg-[#155e94]/30 text-[#155e94]"
+                )}
+              >
+                <Repeat className="h-6 w-6" />
+              </Button>
+            </div>
+
+            {/* Thanh progress */}
+            <Slider
+              value={[currentTime]}
+              max={duration}
+              step={0.1}
+              onValueChange={handleProgressChange}
+              className="flex-1 cursor-pointer [&_[data-orientation=horizontal]]:bg-white/30 
+                   [&_[data-orientation=horizontal]_span]:bg-[#155e94] 
+                   [&_[role=slider]]:border-[#155e94] 
+                   [&_[role=slider]]:bg-white 
+                   [&_[role=slider]]:shadow-lg"
+            />
+
+            {/* Thời gian */}
+            <div className="text-white text-xs sm:text-sm font-medium whitespace-nowrap ml-2">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </div>
+          </div>
+
+          {/* Hàng 2: tốc độ phát + volume */}
+          <div className="flex items-center justify-between gap-2 w-full">
+            {/* Playback rate */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 px-2"
                 >
-                  {rate}x
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  {playbackRate}x
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-24">
+                {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((rate) => (
+                  <DropdownMenuItem
+                    key={rate}
+                    onClick={() => handlePlaybackRateChange(rate)}
+                  >
+                    {rate}x
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleLoopToggle}
-            className={cn(
-              "text-white hover:bg-white/20",
-              loop && "bg-[#155e94]/30 text-[#155e94]"
-            )}
-          >
-            <Repeat className="h-6 w-6" />
-            <span className="sr-only">Lặp lại</span>
-          </Button>
+            {/* Volume */}
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMute}
+                className="text-white hover:bg-white/20"
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="h-5 w-5" />
+                ) : (
+                  <Volume2 className="h-5 w-5" />
+                )}
+              </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleMute}
-            className="text-white hover:bg-white/20"
-          >
-            {isMuted || volume === 0 ? (
-              <VolumeX className="h-6 w-6" />
-            ) : (
-              <Volume2 className="h-6 w-6" />
-            )}
-            <span className="sr-only">
-              {isMuted ? "Tắt tiếng" : "Bật tiếng"}
-            </span>
-          </Button>
-          <Slider
-            value={[isMuted ? 0 : volume * 100]}
-            max={100}
-            step={1}
-            onValueChange={handleVolumeChange}
-            className="w-24 cursor-pointer [&_[data-orientation=horizontal]]:bg-white/30 [&_[data-orientation=horizontal]_span]:bg-[#155e94] [&_[role=slider]]:border-[#155e94] [&_[role=slider]]:bg-white [&_[role=slider]]:shadow-lg"
-          />
+              {/* Luôn hiển thị volume slider nhưng co nhỏ trên mobile */}
+              <Slider
+                value={[isMuted ? 0 : volume * 100]}
+                max={100}
+                step={1}
+                onValueChange={handleVolumeChange}
+                className="w-16 sm:w-24 cursor-pointer [&_[data-orientation=horizontal]]:bg-white/30 
+                     [&_[data-orientation=horizontal]_span]:bg-[#155e94] 
+                     [&_[role=slider]]:border-[#155e94] 
+                     [&_[role=slider]]:bg-white 
+                     [&_[role=slider]]:shadow-lg"
+              />
+            </div>
+          </div>
         </div>
       </div>
     );

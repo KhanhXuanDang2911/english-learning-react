@@ -1,168 +1,295 @@
-"use client";
-
-import type React from "react";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Search } from "lucide-react";
 import DictationLessonCard from "@/components/DictationLessonCard";
+import {
+  mockPracticeTests,
+  type DictationLesson,
+  type PracticeTest,
+} from "./dictationLessonsMockdata";
 
-// Mock data for dictation lessons
-export const mockDictationLessons = [
-  {
-    id: "daily-dictation-1",
-    title: "Daily Dictation - Level 1",
-    description:
-      "Bài chép chính tả hàng ngày cơ bản, phù hợp cho người mới bắt đầu.",
-    difficulty: "Dễ",
-    duration: "5 phút",
-    imageUrl: "/placeholder.svg?height=200&width=300",
-    mediaUrl:
-      "https://admin.zenlishtoeic.vn/wp-content/uploads/2024/10/1.-Tranh-1_02.mp3",
-    sentences: [
-      {
-        id: 1,
-        text: "The quick brown fox jumps over the lazy dog.",
-        startTime: 0,
-        endTime: 3.5,
-      },
-      {
-        id: 2,
-        text: "Practice makes perfect, so keep trying.",
-        startTime: 4.0,
-        endTime: 7.2,
-      },
-      {
-        id: 3,
-        text: "Learning a new language can be challenging but rewarding.",
-        startTime: 7.5,
-        endTime: 11.8,
-      },
-      {
-        id: 4,
-        text: "Please ensure all necessary documents are submitted by Friday.",
-        startTime: 12.0,
-        endTime: 16.5,
-      },
-      {
-        id: 5,
-        text: "Artificial intelligence is transforming various industries.",
-        startTime: 17.0,
-        endTime: 21.0,
-      },
-    ],
-  },
-  {
-    id: "business-english-2",
-    title: "Business English Dictation - Level 2",
-    description:
-      "Luyện nghe chép chính tả với các đoạn hội thoại tiếng Anh thương mại.",
-    difficulty: "Trung bình",
-    duration: "8 phút",
-    imageUrl: "/placeholder.svg?height=200&width=300",
-    mediaUrl: "/placeholder.svg?height=400&width=600",
-    sentences: [
-      {
-        id: 1,
-        text: "We need to finalize the report by end of day.",
-        startTime: 0,
-        endTime: 4.0,
-      },
-      {
-        id: 2,
-        text: "The market trends indicate a significant shift in consumer behavior.",
-        startTime: 4.5,
-        endTime: 9.0,
-      },
-      {
-        id: 3,
-        text: "Our quarterly earnings have exceeded expectations.",
-        startTime: 9.5,
-        endTime: 13.0,
-      },
-      {
-        id: 4,
-        text: "Let's schedule a follow-up meeting to discuss the next steps.",
-        startTime: 13.5,
-        endTime: 18.0,
-      },
-    ],
-  },
-  {
-    id: "academic-listening-3",
-    title: "Academic Listening - Level 3",
-    description:
-      "Các bài nghe học thuật phức tạp, giúp cải thiện kỹ năng nghe hiểu.",
-    difficulty: "Khó",
-    duration: "12 phút",
-    imageUrl: "/placeholder.svg?height=200&width=300",
-    mediaUrl: "/placeholder.svg?height=400&width=600",
-    sentences: [
-      {
-        id: 1,
-        text: "The theory of relativity revolutionized our understanding of space and time.",
-        startTime: 0,
-        endTime: 6.0,
-      },
-      {
-        id: 2,
-        text: "Quantum mechanics describes the behavior of matter and light at the atomic and subatomic levels.",
-        startTime: 6.5,
-        endTime: 13.0,
-      },
-      {
-        id: 3,
-        text: "The industrial revolution led to unprecedented changes in society and economy.",
-        startTime: 13.5,
-        endTime: 19.0,
-      },
-    ],
-  },
-];
+interface DictationLessonsProps {
+  id: string;
+}
 
-const DictationLessonsPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+// Mock function to simulate API call based on topic ID
+const fetchTopicData = async (id: string) => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
-  const filteredLessons = mockDictationLessons.filter(
-    (lesson) =>
-      lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lesson.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const topicDataMap: Record<
+    string,
+    { title: string; practiceTests: PracticeTest[] }
+  > = {
+    "toeic-listening": {
+      title: "TOEIC Listening",
+      practiceTests: mockPracticeTests,
+    },
+    "ielts-listening": {
+      title: "IELTS Listening",
+      practiceTests: [
+        {
+          id: "ielts-practice-1",
+          title: "IELTS Practice Test 1",
+          lessonCount: 15,
+          lessons: [
+            {
+              id: "ielts-conv-1",
+              title: "Conversation 1",
+              subtitle: "University Accommodation Inquiry",
+              parts: 10,
+              vocabLevel: "B2",
+              type: "Conversation" as const,
+            },
+            {
+              id: "ielts-conv-2",
+              title: "Conversation 2",
+              subtitle: "Library Services Information",
+              parts: 12,
+              vocabLevel: "B1",
+              type: "Conversation" as const,
+            },
+          ],
+        },
+        {
+          id: "ielts-practice-2",
+          title: "IELTS Practice Test 2",
+          lessonCount: 15,
+          lessons: [],
+        },
+      ],
+    },
+    conversations: {
+      title: "Daily Conversations",
+      practiceTests: [
+        {
+          id: "daily-conv-1",
+          title: "Daily Conversations Set 1",
+          lessonCount: 25,
+          lessons: [
+            {
+              id: "daily-1",
+              title: "Conversation 1",
+              subtitle: "At the Coffee Shop",
+              parts: 8,
+              vocabLevel: "A2",
+              type: "Conversation" as const,
+            },
+            {
+              id: "daily-2",
+              title: "Conversation 2",
+              subtitle: "Making Appointments",
+              parts: 6,
+              vocabLevel: "A2",
+              type: "Conversation" as const,
+            },
+          ],
+        },
+      ],
+    },
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-      <h1 className="text-3xl font-bold mb-2">Bài Học Chép Chính Tả</h1>
-      <p className="text-muted-foreground mb-8">
-        Chọn một bài học để bắt đầu luyện tập kỹ năng nghe và viết của bạn.
-      </p>
-
-      <div className="flex items-center space-x-2 mb-8">
-        <Input
-          type="text"
-          placeholder="Tìm kiếm bài học..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-        <Button variant="outline" size="icon">
-          <Search className="h-4 w-4" />
-          <span className="sr-only">Tìm kiếm</span>
-        </Button>
-      </div>
-
-      {filteredLessons.length === 0 ? (
-        <p className="text-center text-muted-foreground">
-          Không tìm thấy bài học nào phù hợp.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredLessons.map((lesson) => (
-            <DictationLessonCard key={lesson.id} lesson={lesson} />
-          ))}
-        </div>
-      )}
-    </div>
+    topicDataMap[id] || {
+      title: "Unknown Topic",
+      practiceTests: [],
+    }
   );
 };
 
-export default DictationLessonsPage;
+export default function DictationLessons({ id }: DictationLessonsProps) {
+  const [topicData, setTopicData] = useState<{
+    title: string;
+    practiceTests: PracticeTest[];
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("All levels");
+
+  useEffect(() => {
+    const loadTopicData = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchTopicData(id);
+        setTopicData(data);
+      } catch (error) {
+        console.error("Failed to load topic data:", error);
+        setTopicData({ title: "Error Loading Topic", practiceTests: [] });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTopicData();
+  }, [id]);
+
+  const filterLessons = (lessons: DictationLesson[]) => {
+    return lessons.filter((lesson) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lesson.subtitle.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesLevel =
+        selectedLevel === "All levels" || lesson.vocabLevel === selectedLevel;
+
+      return matchesSearch && matchesLevel;
+    });
+  };
+
+  const handleLessonClick = (lessonId: string) => {
+    console.log("Lesson clicked:", lessonId);
+  };
+
+  const handleSearch = () => {
+    console.log("Search:", searchTerm, "Level:", selectedLevel);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+        </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-color mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading topic data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!topicData) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+        </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Failed to load topic data</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+      </div>
+
+      {/* Header */}
+      <div className="relative bg-gradient-to-r bg-primary-color text-white py-12">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative main-layout">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold">
+              {topicData.title}
+            </h1>
+          </div>
+
+          {/* Search + Filter */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-white/95 backdrop-blur-sm text-gray-900 border-0 rounded-lg shadow-lg"
+              />
+            </div>
+
+            <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+              <SelectTrigger className="w-full sm:w-40 bg-white/95 backdrop-blur-sm text-gray-900 border-0 rounded-lg shadow-lg">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All levels">All levels</SelectItem>
+                <SelectItem value="A1">A1</SelectItem>
+                <SelectItem value="A2">A2</SelectItem>
+                <SelectItem value="B1">B1</SelectItem>
+                <SelectItem value="B2">B2</SelectItem>
+                <SelectItem value="C1">C1</SelectItem>
+                <SelectItem value="C2">C2</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              onClick={handleSearch}
+              className="bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50"
+            >
+              OK
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Practice Tests */}
+      <div className="relative main-layout py-8">
+        <Accordion type="multiple" className="space-y-4">
+          {topicData.practiceTests.map((practiceTest) => {
+            const filteredLessons = filterLessons(practiceTest.lessons);
+            return (
+              <AccordionItem
+                key={practiceTest.id}
+                value={practiceTest.id}
+                className="glass-effect border-white/20 shadow-lg rounded-lg overflow-hidden"
+              >
+                <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-white/50 transition-colors">
+                  <div className="flex items-center gap-2 text-left">
+                    <span className="text-lg font-semibold text-gray-900">
+                      {practiceTest.title}
+                    </span>
+                    <span className="text-sm text-gray-600 font-normal">
+                      ({practiceTest.lessonCount} lessons)
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  {filteredLessons.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                      {filteredLessons.map((lesson) => (
+                        <DictationLessonCard
+                          key={lesson.id}
+                          lesson={lesson}
+                          onClick={handleLessonClick}
+                        />
+                      ))}
+                    </div>
+                  ) : practiceTest.lessons.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No lessons available for this practice test yet.</p>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No lessons match your current filters.</p>
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
+      </div>
+    </div>
+  );
+}

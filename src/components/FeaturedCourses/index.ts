@@ -1,3 +1,2 @@
-import FeaturedCourses from "./FeaturedCourses";
-
-export default FeaturedCourses;
+export { default } from './FeaturedCourses';
+export { default as AnimatedBackground } from './AnimatedBackground';

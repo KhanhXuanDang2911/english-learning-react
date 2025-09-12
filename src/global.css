@@ -1,8 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
 
 body {
   font-weight: 400;
-  font-family: "Inter", sans-serif !important;
+  font-family: "Nunito", sans-serif !important;
 }
 
 .Toastify__toast--success {
@@ -10,16 +10,19 @@ body {
   font-weight: 500 !important;
   border: 1px solid #0284c7;
 }
+
 .Toastify__toast--error {
   color: #dc2626 !important;
   border: 1px solid #0284c7;
   font-weight: 500 !important;
 }
+
 .Toastify__toast--info {
   color: #0891b7 !important;
   border: 1px solid #0284c7;
   font-weight: 500 !important;
 }
+
 .Toastify__toast--warning {
   color: #f59e0b !important;
   border: 1px solid #0284c7;
@@ -42,20 +45,26 @@ body {
 .no-spinner::-webkit-outer-spin-button,
 .no-spinner::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .no-spinner {
-  -moz-appearance: textfield; /* Firefox */
+  -moz-appearance: textfield;
+  appearance: textfield;
+  /* Firefox */
 }
 
 /* Basic TipTap editor styles */
 .ProseMirror {
   min-height: 200px;
   padding: 1rem;
-  border-radius: 0.375rem; /* rounded-md */
-  border: 1px solid #e5e7eb; /* border-gray-200 */
-  background-color: #ffffff; /* White background for light mode */
+  border-radius: 0.375rem;
+  /* rounded-md */
+  border: 1px solid #e5e7eb;
+  /* border-gray-200 */
+  background-color: #ffffff;
+  /* White background for light mode */
 }
 
 .ProseMirror:focus {
@@ -68,7 +77,8 @@ body {
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   line-height: 1.75;
-  color: #374151; /* text-gray-700 */
+  color: #374151;
+  /* text-gray-700 */
 }
 
 .prose h1 {
@@ -184,13 +194,42 @@ body {
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
-    backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* Note: Avoid global transitions on all elements to prevent jank.
+   Use explicit utility classes (e.g., Tailwind transition-*) where needed. */
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Lightweight floating animation for subtle background motion */
+@keyframes floatUpDown {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(16px);
+  }
+}
+
+/* Slow horizontal drift */
+@keyframes moveHorizontal {
+  0% {
+    transform: translateX(-24px);
+  }
+
+  50% {
+    transform: translateX(24px);
+  }
+
+  100% {
+    transform: translateX(-24px);
+  }
 }
 
 /* Enhanced button hover effects */
@@ -206,15 +245,131 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: left 0.5s;
 }
 
 .btn-modern:hover::before {
   left: 100%;
+}
+
+/* Additional animations for Featured Courses */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(21, 94, 148, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(21, 94, 148, 0.6);
+  }
+}
+
+@keyframes textShimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes floatUpDown {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.animate-text-shimmer {
+  background: linear-gradient(90deg, #155e94, #3b82f6, #155e94, #3b82f6);
+  background-size: 200% 100%;
+  animation: textShimmer 3s ease-in-out infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.animate-float-up-down {
+  animation: floatUpDown 3s ease-in-out infinite;
+}
+
+/* Contact specific animations */
+@keyframes contactCardFloat {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes iconPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-contact-card-float {
+  animation: contactCardFloat 4s ease-in-out infinite;
+}
+
+.animate-icon-pulse {
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
 }

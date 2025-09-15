@@ -14,18 +14,18 @@ function App() {
           <GlobalLoading />
           <AppRoutes />
           <ToastContainer
-            toastClassName="text-[14px]"
             position="bottom-right"
+            toastClassName="text-[14px] w-full max-w-[100vw] sm:max-w-sm"
             autoClose={3000}
             hideProgressBar={false}
-            newestOnTop={true}
+            newestOnTop
             closeOnClick
-            rtl={false}
             pauseOnFocusLoss
             draggable
             pauseOnHover
             theme="light"
           />
+
           <ScrollToTopButton />
         </GoogleOAuthProvider>
       </AuthProvider>

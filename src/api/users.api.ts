@@ -8,11 +8,4 @@ export class UserApi {
     const response = await http.get<UserResponse>(USERS_PATH.GET_PROFILE);
     return response.data;
   };
-  static createPassword = async (password: string) => {
-    const response = await http.post<SuccessResponseNoData>(
-      USERS_PATH.CREATE_PASSWORD,
-      { password }
-    );
-    return response.data;
-  };
 }

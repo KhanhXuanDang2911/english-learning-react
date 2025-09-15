@@ -21,6 +21,8 @@ import { toast } from "react-toastify";
 import useAuth from "@/context/AuthContext";
 import { signIn } from "@/context/AuthContext/auth.action";
 import SignInGoogleButton from "@/components/SignInGoogleButton";
+import type { AxiosError } from "axios";
+import type { ErrorResponse } from "@/types/common.type";
 
 const formSchema = z.object({
   email: z
@@ -51,10 +53,9 @@ const SignIn = () => {
       toast.success("Đăng nhập thành công");
       dispatch(signIn({ isAuthenticated: true, user: response.data.user }));
     },
-    onError: () => {
-      toast.error(
-        "Đăng nhập thất bại, vui lòng kiểm tra lại email hoặc mật khẩu"
-      );
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response.data.message) toast.error(error.response.data.message);
+      else toast("Đăng nhập thất bại, kiểm tra lại thông tin đăng nhập");
     },
   });
 

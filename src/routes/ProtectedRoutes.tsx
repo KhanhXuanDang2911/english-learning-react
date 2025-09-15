@@ -3,27 +3,17 @@ import routes from "./routes.const";
 import MainLayout from "@/layouts/MainLayout";
 import Profile from "@/pages/Profile";
 import AuthGuard from "./AuthGuard";
-import CreatePassword from "@/pages/CreatePassword";
-import ForceCreatePasswordGuard from "./ForceCreatePasswordGuard";
 
 const ProtectedRoutes: RouteObject[] = [
   {
-    element: <ForceCreatePasswordGuard />,
+    element: <AuthGuard />,
     children: [
       {
-        element: <AuthGuard />,
+        element: <MainLayout />,
         children: [
           {
             path: routes.PROFILE,
-            element: (
-              <MainLayout>
-                <Profile />
-              </MainLayout>
-            ),
-          },
-          {
-            path: routes.CREATE_PASSWORD,
-            element: <CreatePassword />,
+            element: <Profile />,
           },
         ],
       },

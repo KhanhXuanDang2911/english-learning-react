@@ -50,15 +50,16 @@ class Http {
 
     this.instance.interceptors.response.use(
       (response) => {
-        console.log(response);
         if (
           response.config.url === AUTH_PATH.SIGN_IN ||
           response.config.url === AUTH_PATH.AUTHENTICATE_GOOGLE
         ) {
-          this.accessToken = response.data.data.accessToken;
-          this.refreshToken = response.data.data.refreshToken;
-          setAccessTokenLocalStorage(this.accessToken);
-          setRefreshTokenLocalStorage(this.refreshToken);
+          if (!response.data.data.user.noPassword) {
+            this.accessToken = response.data.data.accessToken;
+            this.refreshToken = response.data.data.refreshToken;
+            setAccessTokenLocalStorage(this.accessToken);
+            setRefreshTokenLocalStorage(this.refreshToken);
+          }
         }
         if (response.config.url === AUTH_PATH.SIGN_OUT) {
           this.accessToken = "";

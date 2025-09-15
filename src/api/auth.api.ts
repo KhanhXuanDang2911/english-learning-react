@@ -1,7 +1,10 @@
 import type { RefreshTokenResponse, SignInResponse } from "@/types/auth.type";
 import http from "./http";
 import { AUTH_PATH, USERS_PATH } from "./path";
-import type { SuccessResponseNoData } from "@/types/common.type";
+import type {
+  SuccessResponse,
+  SuccessResponseNoData,
+} from "@/types/common.type";
 import {
   getAccessTokenLocalStorage,
   getRefreshTokenLocalStorage,
@@ -52,6 +55,32 @@ export class AuthApi {
 
   static signUp = async (user: SignUpUserRequest) => {
     const response = await http.post<UserResponse>(AUTH_PATH.SIGN_UP, user);
+    return response.data;
+  };
+
+  static checkNoPassword = async (email: string) => {
+    const response = await http.get<SuccessResponse<boolean>>(
+      `${AUTH_PATH.CHECK_NO_PASSWORD}/${email}`
+    );
+    return response.data;
+  };
+
+  static createPassword = async (email: string, password: string) => {
+    const response = await http.post<SuccessResponseNoData>(
+      AUTH_PATH.CREATE_PASSWORD,
+      { email, password }
+    );
+    return response.data;
+  };
+
+  static verifyEmail = async (token: string) => {
+    const response = await http.post<SuccessResponseNoData>(
+      AUTH_PATH.VERIFY_EMAIL,
+      null,
+      {
+        headers: { "C-Token": token },
+      }
+    );
     return response.data;
   };
 }

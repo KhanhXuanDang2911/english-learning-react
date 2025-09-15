@@ -86,7 +86,7 @@ const defaultLegalLinks = [
 const Footer = ({
   logo = {
     url: "/",
-    src: "/images/logo_final.png",
+    src: "/images/student.png",
     alt: "logo",
     title: "K-English",
   },

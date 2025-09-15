@@ -6,6 +6,8 @@ import NoAuthGuard from "./NoAuthGuard";
 import SignIn from "@/pages/SignIn";
 import EmailConfirmationNotice from "@/pages/EmailConfirmationNotice";
 import VerifyEmail from "@/pages/VerifyEmail";
+import ResetPassword from "@/pages/ResetPassword";
+import ForgotPassword from "@/pages/ForgotPassword";
 
 const RejectedRoutes: RouteObject[] = [
   {
@@ -23,6 +25,14 @@ const RejectedRoutes: RouteObject[] = [
           {
             path: routes.VERIFY_EMAIL,
             element: <VerifyEmail />,
+          },
+          {
+            path: routes.FORGOT_PASSWORD,
+            element: <ForgotPassword />,
+          },
+          {
+            path: routes.RESET_PASSWORD,
+            element: <ResetPassword />,
           },
         ],
       },

@@ -9,14 +9,12 @@ import Posts from "@/pages/Posts";
 import PostDetail from "@/pages/PostDetail";
 import Lesson from "@/pages/Lesson";
 import Flashcards from "@/pages/Flashcards";
-import Account from "@/pages/Account";
 import MyPosts from "@/pages/MyPosts";
 import MyFlashcards from "@/pages/MyFlashcards";
 import Orders from "@/pages/Orders";
 import FlashcardDetail from "@/pages/FlashcardDetail";
 import CreateFlashcard from "@/pages/CreateFlashcard";
 import Cart from "@/pages/Cart";
-import DictationLessonDetail from "@/pages/DictationLessonDetail";
 import DictationTopics from "@/pages/DictationTopics";
 import DictationLessons from "@/pages/DictationLessons";
 import CreatePassword from "@/pages/CreatePassword";
@@ -44,10 +42,6 @@ const PublicRoutes: RouteObject[] = [
       {
         path: routes.DICTATION_LESSONS,
         element: <DictationLessons id="toeic-listening" />,
-      },
-      {
-        path: routes.DICTATION_LESSON_DETAIL,
-        element: <DictationLessonDetail />,
       },
     ],
   },

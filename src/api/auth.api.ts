@@ -83,4 +83,23 @@ export class AuthApi {
     );
     return response.data;
   };
+
+  static forgotPassword = async (email: string) => {
+    const response = await http.post<SuccessResponseNoData>(
+      AUTH_PATH.FORGOT_PASSWORD,
+      { email }
+    );
+    return response.data;
+  };
+
+  static resetPassword = async (token: string, newPassword: string) => {
+    const response = await http.post<SuccessResponseNoData>(
+      AUTH_PATH.RESET_PASSWORD,
+      { newPassword },
+      {
+        headers: { "R-Token": token },
+      }
+    );
+    return response.data;
+  };
 }

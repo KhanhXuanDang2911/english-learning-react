@@ -3,7 +3,6 @@ import { AuthApi } from "./auth.api";
 import { signOut } from "@/context/AuthContext/auth.action";
 import { externalDispatch } from "@/context/AuthContext/auth.context";
 import type { ErrorResponse } from "@/types/common.type";
-import type { RefreshTokenResponse } from "@/types/auth.type";
 import {
   getAccessTokenLocalStorage,
   getRefreshTokenLocalStorage,
@@ -21,12 +20,15 @@ class Http {
   instance: AxiosInstance;
   private accessToken: string;
   private refreshToken: string;
-  private promiseRefreshToken: Promise<RefreshTokenResponse> | null;
+  private isRefreshing: boolean;
+  private queue: ((token: string) => void)[];
 
   constructor() {
     this.accessToken = getAccessTokenLocalStorage();
     this.refreshToken = getRefreshTokenLocalStorage();
-    this.promiseRefreshToken = null;
+    this.isRefreshing = false;
+    this.queue = [];
+
     this.instance = axios.create({
       baseURL: "http://localhost:8080/e-learning",
       timeout: 5000,
@@ -43,9 +45,7 @@ class Http {
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
     this.instance.interceptors.response.use(
@@ -61,40 +61,63 @@ class Http {
             setRefreshTokenLocalStorage(this.refreshToken);
           }
         }
+
         if (response.config.url === AUTH_PATH.SIGN_OUT) {
           this.accessToken = "";
           this.refreshToken = "";
           removeTokenLocalStorage();
         }
+
         return response;
       },
-      (error: AxiosError<ErrorResponse>) => {
-        const { config } = error;
+      async (error: AxiosError<ErrorResponse>) => {
+        const originalRequest = error.config as AxiosRequestConfig & {
+          _retry?: boolean;
+        };
+
         if (
           error.response?.data.status === 401 &&
-          config?.url !== AUTH_PATH.SIGN_OUT &&
-          config?.url !== AUTH_PATH.REFRESH_TOKEN &&
-          config?.url !== AUTH_PATH.SIGN_IN
+          originalRequest &&
+          !originalRequest._retry &&
+          originalRequest.url !== AUTH_PATH.SIGN_OUT &&
+          originalRequest.url !== AUTH_PATH.REFRESH_TOKEN &&
+          originalRequest.url !== AUTH_PATH.SIGN_IN &&
+          originalRequest.url !== AUTH_PATH.RESET_PASSWORD
         ) {
-          this.promiseRefreshToken = this.promiseRefreshToken
-            ? this.promiseRefreshToken
-            : AuthApi.refreshToken().finally(
-                () => (this.promiseRefreshToken = null)
-              );
-          return this.promiseRefreshToken
-            .then((response) => {
-              this.accessToken = response.data.accessToken;
-              setAccessTokenLocalStorage(this.accessToken);
-              return this.instance(config as AxiosRequestConfig);
-            })
-            .catch((err) => {
-              removeTokenLocalStorage();
-              this.accessToken = "";
-              this.refreshToken = "";
-              externalDispatch(signOut());
-              return Promise.reject(err);
+          if (this.isRefreshing) {
+            return new Promise((resolve) => {
+              this.queue.push((token: string) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                resolve(this.instance(originalRequest));
+              });
             });
+          }
+
+          originalRequest._retry = true;
+          this.isRefreshing = true;
+
+          try {
+            const response = await AuthApi.refreshToken();
+            this.accessToken = response.data.accessToken;
+            setAccessTokenLocalStorage(this.accessToken);
+
+            this.queue.forEach((cb) => cb(this.accessToken));
+            this.queue = [];
+
+            originalRequest.headers.Authorization = `Bearer ${this.accessToken}`;
+            return this.instance(originalRequest);
+          } catch (err) {
+            this.queue = [];
+            removeTokenLocalStorage();
+            this.accessToken = "";
+            this.refreshToken = "";
+            externalDispatch(signOut());
+            return Promise.reject(err);
+          } finally {
+            this.isRefreshing = false;
+          }
         }
+
         return Promise.reject(error);
       }
     );

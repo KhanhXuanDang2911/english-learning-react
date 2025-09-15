@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -43,6 +42,8 @@ import { UserApi } from "@/api/users.api";
 import { toast } from "react-toastify";
 import type { UserRequest } from "@/types/user.type";
 import dayjs from "dayjs";
+import type { AxiosError } from "axios";
+import type { ErrorResponse } from "@/types/common.type";
 
 const sidebarItems = [
   { id: "account", label: "Tài khoản", icon: User },
@@ -91,9 +92,9 @@ const accountSchema = z.object({
 
 const passwordSchema = z
   .object({
-    currentPassword: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
-    newPassword: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
-    confirmPassword: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
+    currentPassword: z.string().min(8, "Mật khẩu ít nhất 8 ký tự"),
+    newPassword: z.string().min(8, "Mật khẩu ít nhất 8 ký tự"),
+    confirmPassword: z.string().min(8, "Mật khẩu ít nhất 8 ký tự"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Mật khẩu xác nhận không khớp",
@@ -121,6 +122,34 @@ export default function Account() {
     },
   });
 
+  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  useEffect(() => {
+    if (user) {
+      accountForm.reset({
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber || "",
+        birthDate: user.birthDate || "",
+        address: user.address || "",
+        gender: user.gender || "OTHER",
+      });
+    }
+  }, [user, accountForm]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    };
+  }, [avatarPreviewUrl]);
+
   const updateProfileMutation = useMutation({
     mutationFn: (data: UserRequest) => UserApi.updateProfile(data),
     onError: () => {
@@ -145,27 +174,17 @@ export default function Account() {
     },
   });
 
-  useEffect(() => {
-    if (user) {
-      accountForm.reset({
-        fullName: user.fullName,
-        email: user.email,
-        phoneNumber: user.phoneNumber || "",
-        birthDate: user.birthDate || "",
-        address: user.address || "",
-        gender: user.gender || "OTHER",
-      });
-    }
-  }, [user, accountForm]);
-
-  useEffect(() => {
-    return () => {
-      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
-    };
-  }, [avatarPreviewUrl]);
-
-  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
-    resolver: zodResolver(passwordSchema),
+  const updatePasswordMutation = useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) =>
+      UserApi.updatePassword(data.currentPassword, data.newPassword),
+    onError: (error: AxiosError<ErrorResponse>) => {
+      if (error.response.data.status === 40005)
+        toast.error(error.response.data.message);
+      else toast.error("Cập nhật mật khẩu thất bại");
+    },
+    onSuccess: () => {
+      toast.success("Cập nhật mật khẩu thành công");
+    },
   });
 
   const onSubmitAccount = (data: z.infer<typeof accountSchema>) => {
@@ -177,8 +196,11 @@ export default function Account() {
     });
   };
 
-  const onSubmitPassword = (values: z.infer<typeof passwordSchema>) => {
-    console.log("Updating password:", values);
+  const onSubmitPassword = (data: z.infer<typeof passwordSchema>) => {
+    updatePasswordMutation.mutate({
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    });
   };
 
   return (
@@ -464,48 +486,73 @@ export default function Account() {
                   </TabsContent>
 
                   <TabsContent value="password">
-                    <form
-                      onSubmit={passwordForm.handleSubmit(onSubmitPassword)}
-                      className="space-y-6"
-                    >
-                      <div className="space-y-2">
-                        <Label htmlFor="currentPassword">
-                          Mật khẩu hiện tại
-                        </Label>
-                        <Input
-                          id="currentPassword"
-                          type="password"
-                          {...passwordForm.register("currentPassword")}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="newPassword">Mật khẩu mới</Label>
-                        <Input
-                          id="newPassword"
-                          type="password"
-                          {...passwordForm.register("newPassword")}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">
-                          Xác nhận mật khẩu mới
-                        </Label>
-                        <Input
-                          id="confirmPassword"
-                          type="password"
-                          {...passwordForm.register("confirmPassword")}
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="bg-primary-color hover:bg-hover-primary-color"
+                    <Form {...passwordForm}>
+                      <form
+                        onSubmit={passwordForm.handleSubmit(onSubmitPassword)}
+                        className="space-y-6"
                       >
-                        Cập nhật mật khẩu
-                      </Button>
-                    </form>
+                        <FormField
+                          control={passwordForm.control}
+                          name="currentPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Mật khẩu hiện tại</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={passwordForm.control}
+                          name="newPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Mật khẩu mới</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={passwordForm.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Xác nhận mật khẩu mới</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <Button
+                          type="submit"
+                          className="bg-primary-color hover:bg-hover-primary-color"
+                        >
+                          Cập nhật mật khẩu
+                        </Button>
+                      </form>
+                    </Form>
                   </TabsContent>
                 </Tabs>
               </CardContent>

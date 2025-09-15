@@ -6,6 +6,8 @@ const routes = {
   EMAIL_CONFIRMATION_NOTICE: "/email-confirmation-notice",
   EMAIL_CONFIRMED: "/email-confirmed",
   VERIFY_EMAIL: "/verify-email",
+  FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
   NOT_FOUND: "*",
   PROFILE: "/profile",
   COURSES: "/courses",

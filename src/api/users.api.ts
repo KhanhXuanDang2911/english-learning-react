@@ -1,6 +1,7 @@
 import type { UserRequest, UserResponse } from "@/types/user.type";
 import http from "./http";
 import { USERS_PATH } from "./path";
+import type { SuccessResponseNoData } from "@/types/common.type";
 
 export class UserApi {
   static getProfile = async () => {
@@ -25,6 +26,17 @@ export class UserApi {
       {
         headers: { "Content-Type": "multipart/form-data" },
       }
+    );
+    return response.data;
+  };
+
+  static updatePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    const response = await http.patch<SuccessResponseNoData>(
+      USERS_PATH.UPDATE_PASSWORD,
+      { currentPassword, newPassword }
     );
     return response.data;
   };

@@ -136,7 +136,7 @@ const SignIn = () => {
           </Form>
           <div className="mt-5 space-y-5">
             <Link
-              to="#"
+              to={routes.FORGOT_PASSWORD}
               className="text-sm block text-center text-primary-color"
             >
               Quên mật khẩu

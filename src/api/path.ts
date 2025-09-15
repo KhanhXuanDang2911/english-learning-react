@@ -7,10 +7,13 @@ export const AUTH_PATH = {
   CHECK_NO_PASSWORD: "/api/v1/auth/check-no-password",
   CREATE_PASSWORD: "/api/v1/auth/create-password",
   VERIFY_EMAIL: "/api/v1/auth/verify-email",
+  FORGOT_PASSWORD: "/api/v1/auth/forgot-password",
+  RESET_PASSWORD: "/api/v1/auth/reset-password",
 };
 
 export const USERS_PATH = {
   GET_PROFILE: "/api/v1/users/me",
   UPDATE_PROFILE: "/api/v1/users/me",
   UPDATE_AVATAR: "/api/v1/users/me/avatar",
+  UPDATE_PASSWORD: "/api/v1/users/me/password",
 };

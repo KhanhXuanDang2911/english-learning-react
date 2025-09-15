@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Lock, LogOut, Shield } from "lucide-react";
+import { Eye, EyeOff, Lock, Shield } from "lucide-react";
 import * as z from "zod";
 import {
   Card,
@@ -20,14 +20,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { UserApi } from "@/api/users.api";
 import { toast } from "react-toastify";
 import useAuth from "@/context/AuthContext";
-import { signIn, signOut } from "@/context/AuthContext/auth.action";
-import { useNavigate } from "react-router-dom";
+import { signIn } from "@/context/AuthContext/auth.action";
+import { useLocation, useNavigate } from "react-router-dom";
 import routes from "@/routes/routes.const";
 import { AuthApi } from "@/api/auth.api";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const passwordSchema = z
   .object({
@@ -43,9 +44,15 @@ type FormData = z.infer<typeof passwordSchema>;
 
 export default function CreatePassword() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = location.state || {};
   const { dispatch, state } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  if (!user) {
+    navigate(routes.SIGN_IN);
+  }
 
   const form = useForm<FormData>({
     resolver: zodResolver(passwordSchema),
@@ -56,46 +63,68 @@ export default function CreatePassword() {
     mode: "onSubmit",
   });
 
-  const signOutMutation = useMutation({
-    mutationKey: ["sign-out"],
-    mutationFn: () => AuthApi.signOut(),
-    onSettled: () => {
-      console.log("Đăng xuất thành công");
-      dispatch(signOut());
-      toast.success("Đăng xuất thành công");
+  useQuery({
+    queryKey: ["check-no-password"],
+    queryFn: () =>
+      AuthApi.checkNoPassword(user.email)
+        .then((response) => {
+          if (response.data === false) navigate(routes.SIGN_IN);
+        })
+        .catch(() => navigate(routes.SIGN_IN)),
+    enabled: Boolean(user),
+  });
+
+  const signInMutation = useMutation({
+    mutationKey: ["sign-in"],
+    mutationFn: (data: { email: string; password: string }) =>
+      AuthApi.signIn(data),
+    onSuccess: (response) => {
+      toast.success("Đăng nhập thành công");
+      dispatch(signIn({ isAuthenticated: true, user: response.data.user }));
+    },
+    onError: () => {
+      toast.error(
+        "Đăng nhập thất bại, vui lòng kiểm tra lại email hoặc mật khẩu"
+      );
     },
   });
 
   const createPasswordMutation = useMutation({
     mutationKey: ["create-password"],
-    mutationFn: (password: string) => UserApi.createPassword(password),
+    mutationFn: (password: string) =>
+      AuthApi.createPassword(user.email, password),
     onError: () => {
       toast.error("Tạo mật khẩu thất bại");
+      navigate(routes.SIGN_IN);
     },
-    onSuccess: () => {
-      toast.success("Tạo mật khẩu thành công");
-      dispatch(
-        signIn({
-          isAuthenticated: true,
-          user: { ...state.user, noPassword: false },
-        })
-      );
+    onSuccess: (_, variables) => {
+      signInMutation.mutate({ email: user.email, password: variables });
       navigate(routes.HOME);
     },
   });
 
   const onSubmit = async (data: FormData) => {
-    console.log(data);
     createPasswordMutation.mutate(data.password);
   };
 
+  const getInitials = (name: string) =>
+    name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-lg rounded-2xl border border-gray-200">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-            <Shield className="w-8 h-8 text-blue-600" />
-          </div>
+          <Avatar className="w-20 h-20 mx-auto shadow-md ring-2 ring-blue-200">
+            <AvatarImage src={user?.avatarUrl} alt={user?.fullName} />
+            <AvatarFallback className="bg-blue-100 text-blue-700 font-bold">
+              {user?.fullName ? getInitials(user.fullName) : <Shield />}
+            </AvatarFallback>
+          </Avatar>
+          <p className="font-[500] text-primary-color">{user?.email}</p>
           <div>
             <CardTitle className="text-2xl font-bold text-gray-900">
               Tạo Mật Khẩu
@@ -195,28 +224,6 @@ export default function CreatePassword() {
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4" />
                     Tạo Mật Khẩu
-                  </div>
-                )}
-              </Button>
-              <Button
-                type="submit"
-                className="w-full bg-primary-color hover:bg-hover-primary-color cursor-pointer"
-                disabled={createPasswordMutation.isPending}
-                size="lg"
-                onClick={() => {
-                  signOutMutation.mutate();
-                  dispatch(signOut());
-                }}
-              >
-                {createPasswordMutation.isPending ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Đăng xuất
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <LogOut className="w-4 h-4" />
-                    Đăng xuất
                   </div>
                 )}
               </Button>

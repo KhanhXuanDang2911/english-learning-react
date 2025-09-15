@@ -5,16 +5,27 @@ import { useMutation } from "@tanstack/react-query";
 import { AuthApi } from "@/api/auth.api";
 import useAuth from "@/context/AuthContext";
 import { signIn } from "@/context/AuthContext/auth.action";
+import routes from "@/routes/routes.const";
+import { useNavigate } from "react-router-dom";
 
 export default function SignInGoogleButton() {
   const { dispatch } = useAuth();
+  const navigate = useNavigate();
 
   const authenticateMutation = useMutation({
     mutationKey: ["authenticate", "google"],
     mutationFn: (code: string) => AuthApi.authenticateGoogle(code),
     onSuccess: (response) => {
-      toast.success("Đăng nhập thành công");
-      dispatch(signIn({ isAuthenticated: true, user: response.data.user }));
+      if (!response.data.user.noPassword) {
+        toast.success("Đăng nhập thành công");
+        dispatch(signIn({ isAuthenticated: true, user: response.data.user }));
+      } else {
+        toast.success("Đăng nhập thành công, vui lòng tạo mật khẩu mới");
+        navigate(routes.CREATE_PASSWORD, {
+          state: { user: response.data.user },
+          replace: true,
+        });
+      }
     },
     onError: () => {
       toast.error(

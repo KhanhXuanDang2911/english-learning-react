@@ -24,7 +24,7 @@ import { Select } from "@radix-ui/react-select";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import dayjs from "dayjs";
@@ -80,6 +80,8 @@ const formSchema = z
   });
 
 const SignUp = () => {
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
       fullName: "",
@@ -96,8 +98,11 @@ const SignUp = () => {
   const signUpMutation = useMutation({
     mutationKey: ["sign-up"],
     mutationFn: (data: SignUpUserRequest) => AuthApi.signUp(data),
-    onSuccess: () => {
-      toast.success("Đăng ký thành công");
+    onSuccess: (_, variables) => {
+      toast.success("Đăng ký thành công, vui lòng xác nhận email");
+      navigate(routes.EMAIL_CONFIRMATION_NOTICE, {
+        state: { email: variables.email },
+      });
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       if (!error.response.data.errors) {
@@ -117,7 +122,6 @@ const SignUp = () => {
     },
   });
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log(data);
     signUpMutation.mutate({
       fullName: data.fullName,
       email: data.email,

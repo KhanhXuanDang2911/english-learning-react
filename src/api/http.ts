@@ -73,7 +73,8 @@ class Http {
         if (
           error.response?.data.status === 401 &&
           config?.url !== AUTH_PATH.SIGN_OUT &&
-          config?.url !== AUTH_PATH.REFRESH_TOKEN
+          config?.url !== AUTH_PATH.REFRESH_TOKEN &&
+          config?.url !== AUTH_PATH.SIGN_IN
         ) {
           this.promiseRefreshToken = this.promiseRefreshToken
             ? this.promiseRefreshToken
@@ -88,6 +89,8 @@ class Http {
             })
             .catch((err) => {
               removeTokenLocalStorage();
+              this.accessToken = "";
+              this.refreshToken = "";
               externalDispatch(signOut());
               return Promise.reject(err);
             });

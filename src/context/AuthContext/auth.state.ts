@@ -6,6 +6,6 @@ export interface AuthState {
 }
 
 export const initAuthState: AuthState = {
-  isAuthenticated: false,
+  isAuthenticated: null,
   user: null,
 };

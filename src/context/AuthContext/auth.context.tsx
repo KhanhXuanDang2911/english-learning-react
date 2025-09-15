@@ -4,10 +4,8 @@ import { authReducer } from "./auth.reducer";
 import { signIn, signOut, type AuthPayloadAction } from "./auth.action";
 import { useQuery } from "@tanstack/react-query";
 import { UserApi } from "@/api/users.api";
-import { toast } from "react-toastify";
-import type { AxiosError } from "axios";
-import type { ErrorResponse } from "@/types/common.type";
 import { getAccessTokenLocalStorage } from "@/utils/token";
+import LogoLoader from "@/components/LogoLoader";
 
 interface AuthContextType {
   state: AuthState;
@@ -31,7 +29,7 @@ export default function AuthProvider({
   const accessToken = getAccessTokenLocalStorage();
   externalDispatch = dispatch;
 
-  useQuery({
+  const { isPending } = useQuery({
     queryKey: ["users", "me"],
     queryFn: () =>
       UserApi.getProfile()
@@ -42,8 +40,13 @@ export default function AuthProvider({
         .catch(() => {
           dispatch(signOut());
         }),
-    enabled: Boolean(accessToken) && !state.isAuthenticated,
+    enabled: Boolean(accessToken),
   });
+
+  const isHydrating =
+    Boolean(accessToken) && !state.isAuthenticated && isPending;
+  if (isHydrating) return <LogoLoader />;
+
   return (
     <>
       <AuthContext.Provider value={{ state, dispatch }}>

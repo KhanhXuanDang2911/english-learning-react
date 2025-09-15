@@ -20,8 +20,6 @@ import DictationLessonDetail from "@/pages/DictationLessonDetail";
 import DictationTopics from "@/pages/DictationTopics";
 import DictationLessons from "@/pages/DictationLessons";
 import CreatePassword from "@/pages/CreatePassword";
-import EmailConfirmationNotice from "@/pages/EmailConfirmationNotice";
-import VerifyEmail from "@/pages/VerifyEmail";
 
 const PublicRoutes: RouteObject[] = [
   {
@@ -38,7 +36,6 @@ const PublicRoutes: RouteObject[] = [
       { path: routes.FLASHCARD_DETAIL, element: <FlashcardDetail /> },
       { path: routes.CREATE_FLASHCARD, element: <CreateFlashcard /> },
       { path: routes.EDIT_FLASHCARD, element: <CreateFlashcard /> },
-      { path: routes.ACCOUNT, element: <Account /> },
       { path: routes.MY_POSTS, element: <MyPosts /> },
       { path: routes.MY_FLASHCARDS, element: <MyFlashcards /> },
       { path: routes.ORDERS, element: <Orders /> },

@@ -27,4 +27,6 @@ export interface SignUpUserRequest {
   gender: "MALE" | "FEMALE" | "OTHER";
 }
 
+export type UserRequest = Omit<SignUpUserRequest, "password">;
+
 export type UserResponse = SuccessResponse<User>;

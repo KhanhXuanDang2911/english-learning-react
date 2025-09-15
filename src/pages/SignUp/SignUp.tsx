@@ -18,7 +18,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import routes from "@/routes/routes.const";
 import type { ErrorResponse } from "@/types/common.type";
-import type { SignUpUserRequest } from "@/types/user.type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Select } from "@radix-ui/react-select";
 import { useMutation } from "@tanstack/react-query";
@@ -28,6 +27,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import dayjs from "dayjs";
+import clsx from "clsx";
+import { Loader2 } from "lucide-react";
+import type { SignUpUserRequest } from "@/types/user.type";
 
 const formSchema = z
   .object({
@@ -317,9 +319,21 @@ const SignUp = () => {
 
               <Button
                 type="submit"
-                className="mt-4 w-full bg-primary-color hover:bg-hover-primary-color"
+                disabled={signUpMutation.isPending}
+                className={clsx(
+                  "mt-4 w-full",
+                  "disabled:cursor-not-allowed disabled:bg-primary-color/85 disabled:pointer-events-auto",
+                  "bg-primary-color hover:bg-hover-primary-color"
+                )}
               >
-                Tạo tài khoản
+                {signUpMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Đang tạo tài khoản...
+                  </>
+                ) : (
+                  <>Tạo tài khoản</>
+                )}
               </Button>
             </form>
           </Form>

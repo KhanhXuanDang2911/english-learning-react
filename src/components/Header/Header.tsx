@@ -116,15 +116,6 @@ export default function Header() {
               <NavLinkMobile to={routes.DICTATION_TOPICS}>
                 Nghe chép chính tả
               </NavLinkMobile>
-              {match && (
-                <HashLink
-                  smooth
-                  to="#contact"
-                  className="flex w-full items-center py-2 text-[14px] font-bold text-primary-color"
-                >
-                  Liên hệ
-                </HashLink>
-              )}
             </div>
           </SheetContent>
         </Sheet>

@@ -23,6 +23,8 @@ import { signIn } from "@/context/AuthContext/auth.action";
 import SignInGoogleButton from "@/components/SignInGoogleButton";
 import type { AxiosError } from "axios";
 import type { ErrorResponse } from "@/types/common.type";
+import clsx from "clsx";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   email: z
@@ -115,9 +117,20 @@ const SignIn = () => {
               />
               <Button
                 type="submit"
-                className="mt-4 w-full bg-primary-color hover:bg-hover-primary-color cursor-pointer"
+                disabled={signInMutation.isPending}
+                className={clsx(
+                  "mt-4 w-full bg-primary-color hover:bg-hover-primary-color cursor-pointer",
+                  "disabled:bg-hover-primary-color/95 disabled:cursor-not-allowed disabled:pointer-events-auto"
+                )}
               >
-                Đăng nhập
+                {signInMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Đang đăng nhập...
+                  </>
+                ) : (
+                  <>Đăng nhập</>
+                )}
               </Button>
             </form>
           </Form>

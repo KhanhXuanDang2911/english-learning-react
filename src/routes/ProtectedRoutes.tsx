@@ -1,8 +1,8 @@
 import type { RouteObject } from "react-router-dom";
 import routes from "./routes.const";
 import MainLayout from "@/layouts/MainLayout";
-import Profile from "@/pages/Profile";
 import AuthGuard from "./AuthGuard";
+import Account from "@/pages/Account";
 
 const ProtectedRoutes: RouteObject[] = [
   {
@@ -10,12 +10,7 @@ const ProtectedRoutes: RouteObject[] = [
     children: [
       {
         element: <MainLayout />,
-        children: [
-          {
-            path: routes.PROFILE,
-            element: <Profile />,
-          },
-        ],
+        children: [{ path: routes.ACCOUNT, element: <Account /> }],
       },
     ],
   },

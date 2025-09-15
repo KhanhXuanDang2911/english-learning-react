@@ -11,4 +11,6 @@ export const AUTH_PATH = {
 
 export const USERS_PATH = {
   GET_PROFILE: "/api/v1/users/me",
+  UPDATE_PROFILE: "/api/v1/users/me",
+  UPDATE_AVATAR: "/api/v1/users/me/avatar",
 };

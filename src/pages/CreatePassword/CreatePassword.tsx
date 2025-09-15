@@ -21,7 +21,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { UserApi } from "@/api/users.api";
 import { toast } from "react-toastify";
 import useAuth from "@/context/AuthContext";
 import { signIn } from "@/context/AuthContext/auth.action";
@@ -46,7 +45,7 @@ export default function CreatePassword() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = location.state || {};
-  const { dispatch, state } = useAuth();
+  const { dispatch } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 

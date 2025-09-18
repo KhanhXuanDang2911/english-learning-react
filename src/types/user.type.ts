@@ -29,4 +29,11 @@ export interface SignUpUserRequest {
 
 export type UserRequest = Omit<SignUpUserRequest, "password">;
 
+export type AdminCreateUserRequest = Omit<
+  User,
+  "id" | "permissions" | "noPassword" | "createdAt" | "updatedAt" | "avatarUrl"
+>;
+
+export type AdminUpdateUserRequest = Omit<AdminCreateUserRequest, "password">;
+
 export type UserResponse = SuccessResponse<User>;

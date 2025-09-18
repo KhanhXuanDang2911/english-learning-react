@@ -25,7 +25,6 @@ const PublicRoutes: RouteObject[] = [
     children: [
       { path: routes.HOME, element: <Home /> },
       { path: routes.CREATE_PASSWORD, element: <CreatePassword /> },
-      { path: routes.NOT_FOUND, element: <NotFound /> },
       { path: routes.COURSES, element: <Courses /> },
       { path: routes.COURSE_DETAIL, element: <CourseDetail /> },
       { path: routes.POSTS, element: <Posts /> },
@@ -43,6 +42,7 @@ const PublicRoutes: RouteObject[] = [
         path: routes.DICTATION_LESSONS,
         element: <DictationLessons id="toeic-listening" />,
       },
+      { path: "*", element: <NotFound /> },
     ],
   },
   {

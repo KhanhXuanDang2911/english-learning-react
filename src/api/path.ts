@@ -12,8 +12,10 @@ export const AUTH_PATH = {
 };
 
 export const USERS_PATH = {
+  BASE: "/api/v1/users",
   GET_PROFILE: "/api/v1/users/me",
   UPDATE_PROFILE: "/api/v1/users/me",
   UPDATE_AVATAR: "/api/v1/users/me/avatar",
   UPDATE_PASSWORD: "/api/v1/users/me/password",
+  GET_USERS: "/api/v1/users",
 };

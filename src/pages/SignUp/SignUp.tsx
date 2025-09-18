@@ -33,7 +33,7 @@ import type { SignUpUserRequest } from "@/types/user.type";
 
 const formSchema = z
   .object({
-    fullName: z.string().min(1, "Vui lòng nhập họ và tên"),
+    fullName: z.string().min(2, "Họ và tên ít nhất 2 ký tự"),
     email: z
       .string()
       .min(1, "Email không được để trống")

@@ -31,6 +31,7 @@ import {
   Package,
   LogOut,
   Trash2,
+  ArrowBigRight,
 } from "lucide-react";
 import useAuth from "@/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
@@ -252,7 +253,9 @@ export default function Header() {
                         alt="User"
                         className="object-cover"
                       />
-                      <AvatarFallback>DX</AvatarFallback>
+                      <AvatarFallback>
+                        {currentUser.fullName.slice(0, 2)}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -266,6 +269,12 @@ export default function Header() {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to={routes.DASHBOARD} className="cursor-pointer">
+                      <ArrowBigRight className="mr-2 h-4 w-4" />
+                      <span>Tới trang quản trị</span>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to={routes.ACCOUNT} className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />

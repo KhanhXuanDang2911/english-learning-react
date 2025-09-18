@@ -1,53 +1,34 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import AdminSidebar from "@/components/AdminSidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { useLocation } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+import useAuth from "@/context/AuthContext";
+import routes from "@/routes/routes.const";
+import LogoLoader from "@/components/LogoLoader";
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-}
+export default function AdminLayout() {
+  const navigate = useNavigate();
+  const [isReadyComponent, setIsReadyComponent] = useState<boolean>(false);
+  const {
+    state: { user, isAuthenticated },
+  } = useAuth();
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
-  const location = useLocation();
-
-  const getBreadcrumbs = () => {
-    const pathSegments = location.pathname.split("/").filter(Boolean);
-    const breadcrumbs = [];
-
-    if (pathSegments.length > 1) {
-      breadcrumbs.push({ label: "Admin", href: "/admin" });
-
-      for (let i = 1; i < pathSegments.length; i++) {
-        const segment = pathSegments[i];
-        const href = "/" + pathSegments.slice(0, i + 1).join("/");
-        const label =
-          segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
-
-        if (i === pathSegments.length - 1) {
-          breadcrumbs.push({ label, href, isLast: true });
-        } else {
-          breadcrumbs.push({ label, href });
-        }
-      }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(routes.SIGN_IN, { replace: true });
+    } else if (user.role !== "ADMIN") {
+      navigate(routes.HOME, { replace: true });
+    } else {
+      setIsReadyComponent(true);
     }
+  }, [user, isAuthenticated]);
 
-    return breadcrumbs;
-  };
-
-  const breadcrumbs = getBreadcrumbs();
+  if (!isReadyComponent) return <LogoLoader />;
 
   return (
     <SidebarProvider>
@@ -57,34 +38,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            {breadcrumbs.length > 0 && (
-              <Breadcrumb>
-                <BreadcrumbList>
-                  {breadcrumbs.map((breadcrumb, index) => (
-                    <div
-                      key={breadcrumb.href}
-                      className="flex items-center gap-2"
-                    >
-                      <BreadcrumbItem>
-                        {breadcrumb.isLast ? (
-                          <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
-                        ) : (
-                          <BreadcrumbLink href={breadcrumb.href}>
-                            {breadcrumb.label}
-                          </BreadcrumbLink>
-                        )}
-                      </BreadcrumbItem>
-                      {index < breadcrumbs.length - 1 && (
-                        <BreadcrumbSeparator />
-                      )}
-                    </div>
-                  ))}
-                </BreadcrumbList>
-              </Breadcrumb>
-            )}
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <Outlet />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

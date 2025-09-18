@@ -445,7 +445,7 @@ export default function Account() {
 
                                 <FormControl>
                                   <Select
-                                    key={field.value} // force re-render khi value thay đổi
+                                    key={field.value}
                                     value={field.value || "OTHER"}
                                     onValueChange={field.onChange}
                                   >

@@ -20,140 +20,29 @@ import LessonsManagement from "@/pages/Admin/LessonsManagement";
 
 const AdminRoutes: RouteObject[] = [
   {
-    path: routes.ADMIN_DASHBOARD,
-    element: (
-      <AdminLayout>
-        <Dashboard />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_USERS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <UsersManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_COURSES_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <CoursesManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_CREATE_COURSES_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <CreateCourse />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_UPDATE_COURSES_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <CreateCourse />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_CHAPTERS_BY_COURSE,
-    element: (
-      <AdminLayout>
-        <ChaptersManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_CHAPTERS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <ChaptersManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_LESSONS_BY_CHAPTER,
-    element: (
-      <AdminLayout>
-        <LessonsManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_POSTS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <PostsManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_CREATE_POST_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <AdminCreatePost />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_UPDATE_POST_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <AdminCreatePost />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_CATEGORIES_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <CategoriesManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_FLASHCARDS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <FlashcardsManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_DICTATION_LESSONS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <DictationLessonsManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_ORDERS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <OrdersManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_COUPONS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <CouponsManagement />
-      </AdminLayout>
-    ),
-  },
-  {
-    path: routes.ADMIN_COMMENTS_MANAGEMENT,
-    element: (
-      <AdminLayout>
-        <CommentsManagement />
-      </AdminLayout>
-    ),
+    element: <AdminLayout />,
+    children: [
+      { path: routes.DASHBOARD, element: <Dashboard /> },
+      { path: routes.USERS_MANAGEMENT, element: <UsersManagement /> },
+      { path: routes.COURSES_MANAGEMENT, element: <CoursesManagement /> },
+      { path: routes.CREATE_COURSE, element: <CreateCourse /> },
+      { path: routes.UPDATE_COURSE, element: <CreateCourse /> },
+      { path: routes.CHAPTERS_BY_COURSE, element: <ChaptersManagement /> },
+      { path: routes.CHAPTERS_MANAGEMENT, element: <ChaptersManagement /> },
+      { path: routes.LESSONS_BY_CHAPTER, element: <LessonsManagement /> },
+      { path: routes.POSTS_MANAGEMENT, element: <PostsManagement /> },
+      { path: routes.CREATE_POST, element: <AdminCreatePost /> },
+      { path: routes.UPDATE_POST, element: <AdminCreatePost /> },
+      { path: routes.CATEGORIES_MANAGEMENT, element: <CategoriesManagement /> },
+      { path: routes.FLASHCARDS_MANAGEMENT, element: <FlashcardsManagement /> },
+      {
+        path: routes.DICTATION_LESSONS_MANAGEMENT,
+        element: <DictationLessonsManagement />,
+      },
+      { path: routes.ORDERS_MANAGEMENT, element: <OrdersManagement /> },
+      { path: routes.COUPONS_MANAGEMENT, element: <CouponsManagement /> },
+      { path: routes.COMMENTS_MANAGEMENT, element: <CommentsManagement /> },
+    ],
   },
 ];
 

@@ -1,5 +1,10 @@
-const routes = {
+const commonRoutes = {
   HOME: "/",
+  NOT_FOUND: "*",
+  CART: "/cart",
+};
+
+const authRoutes = {
   SIGN_IN: "/sign-in",
   SIGN_UP: "/sign-up",
   CREATE_PASSWORD: "/create-password",
@@ -8,53 +13,75 @@ const routes = {
   VERIFY_EMAIL: "/verify-email",
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",
-  NOT_FOUND: "*",
+};
+
+const userRoutes = {
   PROFILE: "/profile",
-  COURSES: "/courses",
-  COURSE_DETAIL: "/courses/:slug",
-  POSTS: "/posts",
-  POST_DETAIL: "/posts/:slug",
-  VIDEO_LESSON: "/courses/:courseId/lessons/:lessonId",
-  FLASHCARDS: "/flashcards",
-  FLASHCARD_DETAIL: "/flashcards/:id",
-  CREATE_FLASHCARD: "/flashcards/create",
-  EDIT_FLASHCARD: "/flashcards/:id/edit",
-  CART: "/cart",
   ACCOUNT: "/account",
   MY_POSTS: "/my-posts",
   MY_FLASHCARDS: "/my-flashcards",
   ORDERS: "/orders",
-  DICTATION_TOPICS: "/dictation/topics", // New route for dictation lessons list
-  DICTATION_LESSONS: "/dictation/lessons/:id", // Updated route for dictation detail page
-  DICTATION_LESSON_DETAIL: "/dictation/lesson/:id",
-
-  // Admin page
-  ADMIN_DASHBOARD: "/admin",
-
-  ADMIN_USERS_MANAGEMENT: "/admin/users",
-
-  ADMIN_POSTS_MANAGEMENT: "/admin/posts",
-  ADMIN_CREATE_POST_MANAGEMENT: "/admin/posts/create",
-  ADMIN_UPDATE_POST_MANAGEMENT: "/admin/posts/edit/:id",
-
-  ADMIN_COURSES_MANAGEMENT: "/admin/courses",
-  ADMIN_CREATE_COURSES_MANAGEMENT: "/admin/courses/create",
-  ADMIN_UPDATE_COURSES_MANAGEMENT: "/admin/courses/edit/:id",
-  ADMIN_CHAPTERS_BY_COURSE: "/admin/courses/:courseId/chapters",
-
-  ADMIN_CHAPTERS_MANAGEMENT: "/admin/chapters",
-  ADMIN_LESSONS_BY_CHAPTER: "/admin/chapters/:chapterId/lessons",
-
-  ADMIN_FLASHCARDS_MANAGEMENT: "/admin/flashcards",
-
-  ADMIN_DICTATION_LESSONS_MANAGEMENT: "/admin/dictation-lessons",
-
-  ADMIN_COUPONS_MANAGEMENT: "/admin/coupons",
-
-  ADMIN_COMMENTS_MANAGEMENT: "/admin/comments",
-
-  ADMIN_ORDERS_MANAGEMENT: "admin/orders",
-
-  ADMIN_CATEGORIES_MANAGEMENT: "admin/categories",
 };
+
+const courseRoutes = {
+  COURSES: "/courses",
+  COURSE_DETAIL: "/courses/:slug",
+  VIDEO_LESSON: "/courses/:courseId/lessons/:lessonId",
+};
+
+const postRoutes = {
+  POSTS: "/posts",
+  POST_DETAIL: "/posts/:slug",
+};
+
+const flashcardRoutes = {
+  FLASHCARDS: "/flashcards",
+  FLASHCARD_DETAIL: "/flashcards/:id",
+  CREATE_FLASHCARD: "/flashcards/create",
+  EDIT_FLASHCARD: "/flashcards/:id/edit",
+};
+
+const dictationRoutes = {
+  DICTATION_TOPICS: "/dictation/topics",
+  DICTATION_LESSONS: "/dictation/lessons/:id",
+  DICTATION_LESSON_DETAIL: "/dictation/lesson/:id",
+};
+
+const adminRoutes = {
+  DASHBOARD: "/admin",
+
+  USERS_MANAGEMENT: "/admin/users",
+
+  POSTS_MANAGEMENT: "/admin/posts",
+  CREATE_POST: "/admin/posts/create",
+  UPDATE_POST: "/admin/posts/edit/:id",
+
+  COURSES_MANAGEMENT: "/admin/courses",
+  CREATE_COURSE: "/admin/courses/create",
+  UPDATE_COURSE: "/admin/courses/edit/:id",
+  CHAPTERS_BY_COURSE: "/admin/courses/:courseId/chapters",
+
+  CHAPTERS_MANAGEMENT: "/admin/chapters",
+  LESSONS_BY_CHAPTER: "/admin/chapters/:chapterId/lessons",
+
+  FLASHCARDS_MANAGEMENT: "/admin/flashcards",
+  DICTATION_LESSONS_MANAGEMENT: "/admin/dictation-lessons",
+
+  COUPONS_MANAGEMENT: "/admin/coupons",
+  COMMENTS_MANAGEMENT: "/admin/comments",
+  ORDERS_MANAGEMENT: "/admin/orders",
+  CATEGORIES_MANAGEMENT: "/admin/categories",
+};
+
+const routes = {
+  ...commonRoutes,
+  ...authRoutes,
+  ...userRoutes,
+  ...courseRoutes,
+  ...postRoutes,
+  ...flashcardRoutes,
+  ...dictationRoutes,
+  ...adminRoutes,
+};
+
 export default routes;

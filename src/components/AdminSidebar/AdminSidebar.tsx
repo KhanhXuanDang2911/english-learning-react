@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  BarChart3,
   BookOpen,
   FileText,
   FolderOpen,
@@ -38,82 +37,66 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import useAuth from "@/context/AuthContext";
+import { toast } from "react-toastify";
+import { AuthApi } from "@/api/auth.api";
+import { signOut } from "@/context/AuthContext/auth.action";
+import { useMutation } from "@tanstack/react-query";
 
 const data = {
   navMain: [
     {
-      title: "Dashboard",
+      title: "Thống kê",
       url: "/admin",
       icon: Home,
     },
   ],
   navManagement: [
+    { title: "Người dùng", url: "/admin/users", icon: Users },
+    { title: "Khóa học", url: "/admin/courses", icon: GraduationCap },
+    { title: "Danh mục", url: "/admin/categories", icon: FolderOpen },
+    { title: "Chương", url: "/admin/chapters", icon: BookOpen },
+    { title: "Bài viết", url: "/admin/posts", icon: FileText },
+    { title: "Thẻ ghi nhớ", url: "/admin/flashcards", icon: Zap },
     {
-      title: "Users",
-      url: "/admin/users",
-      icon: Users,
-    },
-    {
-      title: "Courses",
-      url: "/admin/courses",
-      icon: GraduationCap,
-    },
-    {
-      title: "Categories",
-      url: "/admin/categories",
-      icon: FolderOpen,
-    },
-    {
-      title: "Chapters",
-      url: "/admin/chapters",
-      icon: BookOpen,
-    },
-    {
-      title: "Posts",
-      url: "/admin/posts",
-      icon: FileText,
-    },
-    {
-      title: "Flashcards",
-      url: "/admin/flashcards",
-      icon: Zap,
-    },
-    {
-      title: "Dictation Lessons",
+      title: "Bài nghe chính tả",
       url: "/admin/dictation-lessons",
       icon: Headphones,
     },
-    {
-      title: "Coupons",
-      url: "/admin/coupons",
-      icon: Tag,
-    },
-    {
-      title: "Comments",
-      url: "/admin/comments",
-      icon: MessageSquare,
-    },
-    {
-      title: "Orders",
-      url: "/admin/orders",
-      icon: ShoppingCart,
-    },
+    { title: "Mã giảm giá", url: "/admin/coupons", icon: Tag },
+    { title: "Bình luận", url: "/admin/comments", icon: MessageSquare },
+    { title: "Đơn hàng", url: "/admin/orders", icon: ShoppingCart },
   ],
 };
 
 export default function AdminSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const {
+    state: { user },
+    dispatch,
+  } = useAuth();
   const location = useLocation();
 
+  const signOutMutation = useMutation({
+    mutationKey: ["sign-out"],
+    mutationFn: () => AuthApi.signOut(),
+    onSettled: () => {
+      dispatch(signOut());
+      toast.success("Đăng xuất thành công");
+    },
+  });
+
   const handleLogout = () => {
-    // Add logout logic here
-    localStorage.removeItem("token");
-    window.location.href = "/login";
+    signOutMutation.mutate();
   };
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar
+      collapsible="icon"
+      className="transition-all duration-300 w-62 group-data-[collapsible=icon]:w-14"
+      {...props}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -121,22 +104,20 @@ export default function AdminSidebar({
               <Link to="/admin" className="flex items-center gap-2">
                 <div className="relative">
                   <img
-                    src="/images/logo_final.png"
+                    src="/images/student.png"
                     alt="Full Logo"
-                    className="size-10 object-contain group-data-[collapsible=icon]:hidden"
+                    className="size-9 object-contain group-data-[collapsible=icon]:hidden"
                   />
                   <img
-                    src="/images/logo_final.png"
+                    src="/images/student.png"
                     alt="Icon Logo"
-                    className="hidden size-8 object-contain group-data-[collapsible=icon]:block"
+                    className="hidden size-7 object-contain group-data-[collapsible=icon]:block"
                   />
                 </div>
 
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold">
-                    English Learning
-                  </span>
-                  <span className="truncate text-xs">Admin Panel</span>
+                  <span className="truncate font-semibold">K-English</span>
+                  <span className="truncate text-xs">Quản trị viên</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -145,7 +126,7 @@ export default function AdminSidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
+          <SidebarGroupLabel>Tổng quan</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {data.navMain.map((item) => (
@@ -156,7 +137,7 @@ export default function AdminSidebar({
                     isActive={location.pathname === item.url}
                   >
                     <Link to={item.url}>
-                      <item.icon />
+                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -166,7 +147,7 @@ export default function AdminSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupLabel>Quản lý</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {data.navManagement.map((item) => (
@@ -177,7 +158,7 @@ export default function AdminSidebar({
                     isActive={location.pathname === item.url}
                   >
                     <Link to={item.url}>
-                      <item.icon />
+                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -194,48 +175,59 @@ export default function AdminSidebar({
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-0"
+                  className="data-[state=open]:bg-sidebar-accent 
+                       data-[state=open]:text-sidebar-accent-foreground 
+                       group-data-[collapsible=icon]:!size-10 
+                       group-data-[collapsible=icon]:!p-0"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6">
-                    <AvatarImage
-                      src="/placeholder.svg?height=32&width=32"
-                      alt="Admin"
-                    />
-                    <AvatarFallback className="rounded-lg text-xs">
-                      AD
+                  {/* Avatar */}
+                  <Avatar className="h-8 w-8 rounded-full">
+                    <AvatarImage src={user?.avatarUrl} alt="Admin" />
+                    <AvatarFallback className="rounded-full text-xs">
+                      {user?.fullName?.slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold">Admin User</span>
-                    <span className="truncate text-xs">admin@example.com</span>
+
+                  <div className="ml-2 grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                    <span className="truncate font-semibold">
+                      {user?.fullName}
+                    </span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {user?.email}
+                    </span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
+
+              {/* Dropdown */}
               <DropdownMenuContent
-                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                className="min-w-40 rounded-lg shadow-md"
                 side="right"
                 align="end"
-                sideOffset={4}
+                sideOffset={8}
               >
                 <DropdownMenuItem asChild>
                   <Link to="/admin/profile" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    Profile
+                    Hồ sơ
                   </Link>
                 </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
+
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="flex items-center gap-2 text-red-600"
+                  className="flex cursor-pointer items-center gap-2 font-medium text-red-600 focus:text-red-700 focus:bg-red-50"
                 >
                   <LogOut className="h-4 w-4" />
-                  Log out
+                  Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

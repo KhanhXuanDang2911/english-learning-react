@@ -14,15 +14,12 @@ import type {
 
 export class UserApi {
   static getProfile = async () => {
-    const response = await http.get<UserResponse>(USERS_PATH.GET_PROFILE);
+    const response = await http.get<UserResponse>(USERS_PATH.ME);
     return response.data;
   };
 
   static updateProfile = async (user: UserRequest) => {
-    const response = await http.put<UserResponse>(
-      USERS_PATH.UPDATE_PROFILE,
-      user
-    );
+    const response = await http.put<UserResponse>(USERS_PATH.ME, user);
     return response.data;
   };
 
@@ -30,7 +27,7 @@ export class UserApi {
     const formData = new FormData();
     formData.append("avatar", file);
     const response = await http.patch<UserResponse>(
-      USERS_PATH.UPDATE_AVATAR,
+      USERS_PATH.AVATAR,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -44,8 +41,11 @@ export class UserApi {
     newPassword: string
   ) => {
     const response = await http.patch<SuccessResponseNoData>(
-      USERS_PATH.UPDATE_PASSWORD,
-      { currentPassword, newPassword }
+      USERS_PATH.PASSWORD,
+      {
+        currentPassword,
+        newPassword,
+      }
     );
     return response.data;
   };
@@ -60,10 +60,9 @@ export class UserApi {
     if (sorts) {
       params.sorts = sorts;
     }
-    const response = await http.get<PaginationResponse<User>>(
-      USERS_PATH.GET_USERS,
-      { params }
-    );
+    const response = await http.get<PaginationResponse<User>>(USERS_PATH.BASE, {
+      params,
+    });
     return response.data;
   };
 
@@ -90,7 +89,7 @@ export class UserApi {
     );
 
     const response = await http.put<UserResponse>(
-      `${USERS_PATH.BASE}/${id}`,
+      USERS_PATH.BY_ID(id),
       formData,
       {
         headers: {
@@ -103,7 +102,7 @@ export class UserApi {
 
   static deleteUser = async (id: number) => {
     const response = await http.delete<SuccessResponseNoData>(
-      `${USERS_PATH.BASE}/${id}`
+      USERS_PATH.BY_ID(id)
     );
     return response.data;
   };

@@ -9,7 +9,6 @@ import CoursesManagement, {
 import PostsManagement, {
   AdminCreatePost,
 } from "@/pages/Admin/PostsManagement";
-import CategoriesManagement from "@/pages/Admin/CategoryManagement";
 import FlashcardsManagement from "@/pages/Admin/FlashcardsManagement";
 import DictationLessonsManagement from "@/pages/Admin/DictationLessonsManagement";
 import OrdersManagement from "@/pages/Admin/OrdersManagement";
@@ -17,6 +16,8 @@ import CouponsManagement from "@/pages/Admin/CouponsManagement";
 import CommentsManagement from "@/pages/Admin/CommentsManagement";
 import ChaptersManagement from "@/pages/Admin/ChaptersManagement";
 import LessonsManagement from "@/pages/Admin/LessonsManagement";
+import CategoriesCourseManagement from "@/pages/Admin/CategoriesCourseManagement";
+import CategoriesPostManagement from "@/pages/Admin/CategoriesPostManagement";
 
 const AdminRoutes: RouteObject[] = [
   {
@@ -33,7 +34,14 @@ const AdminRoutes: RouteObject[] = [
       { path: routes.POSTS_MANAGEMENT, element: <PostsManagement /> },
       { path: routes.CREATE_POST, element: <AdminCreatePost /> },
       { path: routes.UPDATE_POST, element: <AdminCreatePost /> },
-      { path: routes.CATEGORIES_MANAGEMENT, element: <CategoriesManagement /> },
+      {
+        path: routes.CATEGORIES_COURSE_MANAGEMENT,
+        element: <CategoriesCourseManagement />,
+      },
+      {
+        path: routes.CATEGORIES_POST_MANAGEMENT,
+        element: <CategoriesPostManagement />,
+      },
       { path: routes.FLASHCARDS_MANAGEMENT, element: <FlashcardsManagement /> },
       {
         path: routes.DICTATION_LESSONS_MANAGEMENT,

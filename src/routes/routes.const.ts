@@ -55,11 +55,13 @@ const adminRoutes = {
   POSTS_MANAGEMENT: "/admin/posts",
   CREATE_POST: "/admin/posts/create",
   UPDATE_POST: "/admin/posts/edit/:id",
+  CATEGORIES_POST_MANAGEMENT: "admin/categories-post",
 
   COURSES_MANAGEMENT: "/admin/courses",
   CREATE_COURSE: "/admin/courses/create",
   UPDATE_COURSE: "/admin/courses/edit/:id",
   CHAPTERS_BY_COURSE: "/admin/courses/:courseId/chapters",
+  CATEGORIES_COURSE_MANAGEMENT: "/admin/categories-course",
 
   CHAPTERS_MANAGEMENT: "/admin/chapters",
   LESSONS_BY_CHAPTER: "/admin/chapters/:chapterId/lessons",
@@ -70,7 +72,6 @@ const adminRoutes = {
   COUPONS_MANAGEMENT: "/admin/coupons",
   COMMENTS_MANAGEMENT: "/admin/comments",
   ORDERS_MANAGEMENT: "/admin/orders",
-  CATEGORIES_MANAGEMENT: "/admin/categories",
 };
 
 const routes = {

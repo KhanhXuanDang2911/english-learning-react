@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
+  ArrowBigRight,
   BookOpen,
   FileText,
   FolderOpen,
@@ -42,6 +43,7 @@ import { toast } from "react-toastify";
 import { AuthApi } from "@/api/auth.api";
 import { signOut } from "@/context/AuthContext/auth.action";
 import { useMutation } from "@tanstack/react-query";
+import routes from "@/routes/routes.const";
 
 const data = {
   navMain: [
@@ -52,11 +54,20 @@ const data = {
     },
   ],
   navManagement: [
-    { title: "Người dùng", url: "/admin/users", icon: Users },
+    { title: "Người dùng", url: routes.USERS_MANAGEMENT, icon: Users },
     { title: "Khóa học", url: "/admin/courses", icon: GraduationCap },
-    { title: "Danh mục", url: "/admin/categories", icon: FolderOpen },
+    {
+      title: "Danh mục khoá học",
+      url: routes.CATEGORIES_COURSE_MANAGEMENT,
+      icon: FolderOpen,
+    },
     { title: "Chương", url: "/admin/chapters", icon: BookOpen },
     { title: "Bài viết", url: "/admin/posts", icon: FileText },
+    {
+      title: "Danh mục bài viết",
+      url: routes.CATEGORIES_POST_MANAGEMENT,
+      icon: FolderOpen,
+    },
     { title: "Thẻ ghi nhớ", url: "/admin/flashcards", icon: Zap },
     {
       title: "Bài nghe chính tả",
@@ -66,6 +77,7 @@ const data = {
     { title: "Mã giảm giá", url: "/admin/coupons", icon: Tag },
     { title: "Bình luận", url: "/admin/comments", icon: MessageSquare },
     { title: "Đơn hàng", url: "/admin/orders", icon: ShoppingCart },
+    { title: "Về trang người dùng", url: routes.HOME, icon: ArrowBigRight },
   ],
 };
 

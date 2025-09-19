@@ -1,21 +1,32 @@
+const API_V1 = "/api/v1";
+
 export const AUTH_PATH = {
-  SIGN_IN: "/api/v1/auth/sign-in",
-  REFRESH_TOKEN: "/api/v1/auth/refresh-token",
-  SIGN_OUT: "/api/v1/auth/sign-out",
-  SIGN_UP: "/api/v1/auth/sign-up",
-  AUTHENTICATE_GOOGLE: "/api/v1/auth/authenticate/google",
-  CHECK_NO_PASSWORD: "/api/v1/auth/check-no-password",
-  CREATE_PASSWORD: "/api/v1/auth/create-password",
-  VERIFY_EMAIL: "/api/v1/auth/verify-email",
-  FORGOT_PASSWORD: "/api/v1/auth/forgot-password",
-  RESET_PASSWORD: "/api/v1/auth/reset-password",
+  SIGN_IN: `${API_V1}/auth/sign-in`,
+  REFRESH_TOKEN: `${API_V1}/auth/refresh-token`,
+  SIGN_OUT: `${API_V1}/auth/sign-out`,
+  SIGN_UP: `${API_V1}/auth/sign-up`,
+  AUTHENTICATE_GOOGLE: `${API_V1}/auth/authenticate/google`,
+  CHECK_NO_PASSWORD: `${API_V1}/auth/check-no-password`,
+  CREATE_PASSWORD: `${API_V1}/auth/create-password`,
+  VERIFY_EMAIL: `${API_V1}/auth/verify-email`,
+  FORGOT_PASSWORD: `${API_V1}/auth/forgot-password`,
+  RESET_PASSWORD: `${API_V1}/auth/reset-password`,
 };
 
 export const USERS_PATH = {
-  BASE: "/api/v1/users",
-  GET_PROFILE: "/api/v1/users/me",
-  UPDATE_PROFILE: "/api/v1/users/me",
-  UPDATE_AVATAR: "/api/v1/users/me/avatar",
-  UPDATE_PASSWORD: "/api/v1/users/me/password",
-  GET_USERS: "/api/v1/users",
+  BASE: `${API_V1}/users`,
+  ME: `${API_V1}/users/me`,
+  AVATAR: `${API_V1}/users/me/avatar`,
+  PASSWORD: `${API_V1}/users/me/password`,
+  BY_ID: (id: number | string) => `${API_V1}/users/${id}`,
+};
+
+export const CATEGORIES_COURSE_PATH = {
+  BASE: `${API_V1}/categories-course`,
+  BY_ID: (id: number | string) => `${API_V1}/categories-course/${id}`,
+};
+
+export const CATEGORIES_POST_PATH = {
+  BASE: `${API_V1}/categories-post`,
+  BY_ID: (id: number | string) => `${API_V1}/categories-post/${id}`,
 };

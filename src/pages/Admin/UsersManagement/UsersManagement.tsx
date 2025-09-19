@@ -199,7 +199,7 @@ export default function UsersManagement() {
     defaultValues: {
       keyword: "",
       sortBy: "",
-      order: "asc",
+      order: "",
     },
   });
 
@@ -207,7 +207,7 @@ export default function UsersManagement() {
     const newValues = {
       keyword: keyword,
       sortBy: "",
-      order: "asc",
+      order: "",
     };
 
     if (AppUtils.isValidSortParam(sorts)) {
@@ -717,10 +717,10 @@ export default function UsersManagement() {
                 <Button
                   variant="outline"
                   type="submit"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto bg-primary-color hover:bg-hover-primary-color text-white hover:text-white"
                 >
-                  <Filter className="mr-2 h-4 w-4" />
-                  Lọc
+                  <Search className="mr-1 h-4 w-4" />
+                  Tìm kiếm
                 </Button>
               </form>
             </Form>

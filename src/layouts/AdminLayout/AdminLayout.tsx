@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
+import { Separator } from "@/components/ui/separator";
+import { Outlet, useNavigate } from "react-router-dom";
+import AdminSidebar from "@/components/AdminSidebar";
+import useAuth from "@/context/AuthContext";
+import routes from "@/routes/routes.const";
+import LogoLoader from "@/components/LogoLoader";
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import AdminSidebar from "@/components/AdminSidebar";
-import { Separator } from "@/components/ui/separator";
-import { Outlet, useNavigate } from "react-router-dom";
-import useAuth from "@/context/AuthContext";
-import routes from "@/routes/routes.const";
-import LogoLoader from "@/components/LogoLoader";
 
 export default function AdminLayout() {
   const navigate = useNavigate();

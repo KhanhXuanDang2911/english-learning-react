@@ -9,7 +9,6 @@ import Posts from "@/pages/Posts";
 import PostDetail from "@/pages/PostDetail";
 import Lesson from "@/pages/Lesson";
 import Flashcards from "@/pages/Flashcards";
-import MyPosts from "@/pages/MyPosts";
 import MyFlashcards from "@/pages/MyFlashcards";
 import Orders from "@/pages/Orders";
 import FlashcardDetail from "@/pages/FlashcardDetail";
@@ -29,11 +28,11 @@ const PublicRoutes: RouteObject[] = [
       { path: routes.COURSE_DETAIL, element: <CourseDetail /> },
       { path: routes.POSTS, element: <Posts /> },
       { path: routes.POST_DETAIL, element: <PostDetail /> },
+      { path: routes.NOT_FOUND, element: <NotFound /> },
       { path: routes.FLASHCARDS, element: <Flashcards /> },
       { path: routes.FLASHCARD_DETAIL, element: <FlashcardDetail /> },
       { path: routes.CREATE_FLASHCARD, element: <CreateFlashcard /> },
       { path: routes.EDIT_FLASHCARD, element: <CreateFlashcard /> },
-      { path: routes.MY_POSTS, element: <MyPosts /> },
       { path: routes.MY_FLASHCARDS, element: <MyFlashcards /> },
       { path: routes.ORDERS, element: <Orders /> },
       { path: routes.CART, element: <Cart /> },

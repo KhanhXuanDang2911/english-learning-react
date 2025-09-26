@@ -58,7 +58,6 @@ import {
   MoreHorizontal,
   Plus,
   Search,
-  Filter,
   Edit,
   Trash2,
   FolderX,
@@ -826,7 +825,7 @@ export default function UsersManagement() {
           </div>
 
           {usersData?.data?.items.length > 0 &&
-            usersData.data.totalPages > 0 && (
+            usersData?.data.totalPages > 0 && (
               <div className="mt-4">
                 <Pagination
                   totalPages={usersData.data.totalPages}

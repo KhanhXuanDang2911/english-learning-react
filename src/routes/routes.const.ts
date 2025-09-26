@@ -1,6 +1,6 @@
 const commonRoutes = {
   HOME: "/",
-  NOT_FOUND: "*",
+  NOT_FOUND: "/not-found",
   CART: "/cart",
 };
 
@@ -19,6 +19,8 @@ const userRoutes = {
   PROFILE: "/profile",
   ACCOUNT: "/account",
   MY_POSTS: "/my-posts",
+  USER_CREATE_POST: "/my-posts/create",
+  USER_EDIT_POST: "/my-posts/edit/:id",
   MY_FLASHCARDS: "/my-flashcards",
   ORDERS: "/orders",
 };

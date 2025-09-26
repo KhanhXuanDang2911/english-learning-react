@@ -14,7 +14,13 @@ export interface User {
   status: "ACTIVE" | "PENDING" | "BANNED";
   gender: "MALE" | "FEMALE" | "OTHER";
   noPassword: boolean;
-  permissions: string[];
+}
+
+export interface UserSummary {
+  id: number;
+  fullName: string;
+  avatarUrl: string | null;
+  role: "ADMIN" | "USER" | "TEACHER";
 }
 
 export interface SignUpUserRequest {

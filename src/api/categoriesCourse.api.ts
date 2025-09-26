@@ -1,7 +1,4 @@
-import type {
-  Category,
-  CategoryCourseResponse,
-} from "@/types/category-course.type";
+import type { Category, CategoryResponse } from "@/types/category.type";
 import http from "./http";
 import { CATEGORIES_COURSE_PATH } from "./path";
 import type {
@@ -27,14 +24,14 @@ export class CategoriesCourseApi {
   };
 
   static getById = async (id: number) => {
-    const response = await http.get<CategoryCourseResponse>(
+    const response = await http.get<CategoryResponse>(
       CATEGORIES_COURSE_PATH.BY_ID(id)
     );
     return response.data;
   };
 
   static create = async (data: { title: string; description?: string }) => {
-    const response = await http.post<CategoryCourseResponse>(
+    const response = await http.post<CategoryResponse>(
       CATEGORIES_COURSE_PATH.BASE,
       data
     );
@@ -45,7 +42,7 @@ export class CategoriesCourseApi {
     id: number,
     data: { title: string; description?: string }
   ) => {
-    const response = await http.put<CategoryCourseResponse>(
+    const response = await http.put<CategoryResponse>(
       CATEGORIES_COURSE_PATH.BY_ID(id),
       data
     );

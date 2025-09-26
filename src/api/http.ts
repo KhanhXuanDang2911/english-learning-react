@@ -15,23 +15,24 @@ import axios, {
   type AxiosInstance,
   type AxiosRequestConfig,
 } from "axios";
+import { toast } from "react-toastify";
 
 class Http {
   instance: AxiosInstance;
   private accessToken: string;
   private refreshToken: string;
-  private isRefreshing: boolean;
-  private queue: ((token: string) => void)[];
+  private refreshPromise: Promise<string> | null;
+  private refreshFailed: boolean;
 
   constructor() {
     this.accessToken = getAccessTokenLocalStorage();
     this.refreshToken = getRefreshTokenLocalStorage();
-    this.isRefreshing = false;
-    this.queue = [];
+    this.refreshPromise = null;
+    this.refreshFailed = false;
 
     this.instance = axios.create({
       baseURL: "http://localhost:8080/e-learning",
-      timeout: 5000,
+      timeout: 10000,
       headers: {
         "Content-Type": "application/json",
         "Accept-Language": "vi",
@@ -59,6 +60,7 @@ class Http {
             this.refreshToken = response.data.data.refreshToken;
             setAccessTokenLocalStorage(this.accessToken);
             setRefreshTokenLocalStorage(this.refreshToken);
+            this.refreshFailed = false;
           }
         }
 
@@ -66,6 +68,7 @@ class Http {
           this.accessToken = "";
           this.refreshToken = "";
           removeTokenLocalStorage();
+          this.refreshFailed = false;
         }
 
         return response;
@@ -74,6 +77,12 @@ class Http {
         const originalRequest = error.config as AxiosRequestConfig & {
           _retry?: boolean;
         };
+
+        if (originalRequest.url === AUTH_PATH.SIGN_OUT) {
+          removeTokenLocalStorage();
+          this.accessToken = "";
+          this.refreshToken = "";
+        }
 
         if (
           error.response?.data.status === 401 &&
@@ -84,37 +93,47 @@ class Http {
           originalRequest.url !== AUTH_PATH.SIGN_IN &&
           originalRequest.url !== AUTH_PATH.RESET_PASSWORD
         ) {
-          if (this.isRefreshing) {
-            return new Promise((resolve) => {
-              this.queue.push((token: string) => {
-                originalRequest.headers.Authorization = `Bearer ${token}`;
-                resolve(this.instance(originalRequest));
-              });
-            });
-          }
-
-          originalRequest._retry = true;
-          this.isRefreshing = true;
-
-          try {
-            const response = await AuthApi.refreshToken();
-            this.accessToken = response.data.accessToken;
-            setAccessTokenLocalStorage(this.accessToken);
-
-            this.queue.forEach((cb) => cb(this.accessToken));
-            this.queue = [];
-
-            originalRequest.headers.Authorization = `Bearer ${this.accessToken}`;
-            return this.instance(originalRequest);
-          } catch (err) {
-            this.queue = [];
+          if (this.refreshFailed) {
             removeTokenLocalStorage();
             this.accessToken = "";
             this.refreshToken = "";
             externalDispatch(signOut());
+            return Promise.reject(error);
+          }
+
+          originalRequest._retry = true;
+
+          if (!this.refreshPromise) {
+            this.refreshPromise = (async () => {
+              try {
+                const response = await AuthApi.refreshToken();
+                const newAccessToken = response.data.accessToken;
+                const newRefreshToken = response.data.refreshToken;
+                this.accessToken = newAccessToken;
+                this.refreshToken = newRefreshToken;
+                setAccessTokenLocalStorage(this.accessToken);
+                setRefreshTokenLocalStorage(this.refreshToken);
+                return newAccessToken;
+              } catch (err) {
+                this.refreshFailed = true;
+                removeTokenLocalStorage();
+                this.accessToken = "";
+                this.refreshToken = "";
+                externalDispatch(signOut());
+                toast.error("Phiên đăng nhập hết hạn");
+                throw err;
+              } finally {
+                this.refreshPromise = null;
+              }
+            })();
+          }
+
+          try {
+            const token = await this.refreshPromise;
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return this.instance(originalRequest);
+          } catch (err) {
             return Promise.reject(err);
-          } finally {
-            this.isRefreshing = false;
           }
         }
 

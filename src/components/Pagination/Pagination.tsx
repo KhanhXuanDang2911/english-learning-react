@@ -14,6 +14,7 @@ interface PaginationProps {
   pageParamName?: string;
   maxVisiblePages?: number;
   showFirstLast?: boolean;
+  scrollToTop?: boolean;
   className?: string;
   buttonClassName?: string;
   activeButtonClassName?: string;
@@ -107,6 +108,7 @@ export default function Pagination({
   pageParamName = "page",
   maxVisiblePages = 7,
   showFirstLast = true,
+  scrollToTop = true,
   className,
   buttonClassName,
   activeButtonClassName,
@@ -140,12 +142,18 @@ export default function Pagination({
           }
           return newParams;
         });
+        if (scrollToTop && typeof window !== "undefined") {
+          try {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } catch (e) {
+            window.scrollTo(0, 0);
+          }
+        }
       }
     },
-    [currentPage, totalPages, pageParamName, setSearchParams]
+    [currentPage, totalPages, pageParamName, setSearchParams, scrollToTop]
   );
 
-  // Only show pagination if there are pages to paginate
   if (totalPages <= 0) {
     return null;
   }
@@ -173,7 +181,7 @@ export default function Pagination({
             style={{ cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
           >
             <ChevronLeftIcon />
-            <span className="hidden sm:block">Previous</span>
+            <span className="hidden sm:block">Trang trước</span>
           </a>
         </li>
 
@@ -248,7 +256,7 @@ export default function Pagination({
               cursor: currentPage === totalPages ? "not-allowed" : "pointer",
             }}
           >
-            <span className="hidden sm:block">Next</span>
+            <span className="hidden sm:block">Trang sau</span>
             <ChevronRightIcon />
           </a>
         </li>

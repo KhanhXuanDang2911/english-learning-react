@@ -54,6 +54,7 @@ import {
   Trash2,
   FolderOpen,
   FolderX,
+  Loader2,
 } from "lucide-react";
 import Pagination from "@/components/Pagination/Pagination";
 import {
@@ -67,10 +68,7 @@ import { useSearchParams } from "react-router-dom";
 import { AppUtils } from "@/utils/appUtils";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
-import type {
-  Category,
-  CategoryCourseRequest,
-} from "@/types/category-course.type";
+import type { Category, CategoryRequest } from "@/types/category.type";
 import { categorySchema, type CategoryFormData } from "./schemaValidation";
 import {
   Select,
@@ -159,7 +157,7 @@ export default function CategoriesPostManagement() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CategoryCourseRequest) =>
+    mutationFn: (data: CategoryRequest) =>
       CategoriesPostApi.create({
         title: data.title,
         description: data.description,
@@ -191,7 +189,7 @@ export default function CategoriesPostManagement() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CategoryCourseRequest }) =>
+    mutationFn: ({ id, data }: { id: number; data: CategoryRequest }) =>
       CategoriesPostApi.update(id, data),
     onSuccess: () => {
       toast.success("Cập nhật danh mục thành công");
@@ -333,9 +331,17 @@ export default function CategoriesPostManagement() {
                 <DialogFooter>
                   <Button
                     type="submit"
-                    className="bg-[#155e94] hover:bg-[#0b4674]"
+                    className="bg-[#155e94] hover:bg-[#0b4674] disabled:cursor-not-allowed"
+                    disabled={createMutation.isPending}
                   >
-                    Tạo danh mục
+                    {createMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang tạo...
+                      </>
+                    ) : (
+                      "Tạo danh mục"
+                    )}
                   </Button>
                 </DialogFooter>
               </form>
@@ -584,9 +590,17 @@ export default function CategoriesPostManagement() {
               <DialogFooter>
                 <Button
                   type="submit"
-                  className="bg-[#155e94] hover:bg-[#0b4674]"
+                  className="bg-[#155e94] hover:bg-[#0b4674] disabled:cursor-not-allowed"
+                  disabled={updateMutation.isPending}
                 >
-                  Lưu thay đổi
+                  {updateMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang cập nhật...
+                    </>
+                  ) : (
+                    "Lưu thay đổi"
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -642,9 +656,20 @@ export default function CategoriesPostManagement() {
                 <Button
                   type="submit"
                   variant="destructive"
-                  disabled={deleteForm.watch("confirmText") !== "OK"}
+                  className="disabled:cursor-not-allowed"
+                  disabled={
+                    deleteForm.watch("confirmText") !== "OK" ||
+                    deleteMutation.isPending
+                  }
                 >
-                  Xóa danh mục
+                  {deleteMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang xóa...
+                    </>
+                  ) : (
+                    "Xóa danh mục"
+                  )}
                 </Button>
               </DialogFooter>
             </form>

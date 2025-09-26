@@ -30,3 +30,13 @@ export const CATEGORIES_POST_PATH = {
   BASE: `${API_V1}/categories-post`,
   BY_ID: (id: number | string) => `${API_V1}/categories-post/${id}`,
 };
+
+export const POST_PATH = {
+  BASE: `${API_V1}/posts`,
+  BY_ID: (id: number | string) => `${API_V1}/posts/${id}`,
+  GET_PUBLIC: `${API_V1}/posts/public`,
+  GET_PUBLIC_BY_ID: (id: number | string) =>
+    `${API_V1}/posts/public/${id}/related`,
+  ME: `${API_V1}/posts/me`,
+  ME_BY_ID: (id: number | string) => `${API_V1}/posts/me/${id}`,
+};

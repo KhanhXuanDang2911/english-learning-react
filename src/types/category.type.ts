@@ -9,9 +9,9 @@ export interface Category {
   updatedAt?: string;
 }
 
-export interface CategoryCourseRequest {
+export interface CategoryRequest {
   title: string;
   description?: string;
 }
 
-export type CategoryCourseResponse = SuccessResponse<Category>;
+export type CategoryResponse = SuccessResponse<Category>;

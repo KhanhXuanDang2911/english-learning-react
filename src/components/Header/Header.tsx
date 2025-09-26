@@ -254,7 +254,7 @@ export default function Header() {
                         className="object-cover"
                       />
                       <AvatarFallback>
-                        {currentUser.fullName.slice(0, 2)}
+                        {currentUser.fullName.slice(0, 1)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -270,10 +270,12 @@ export default function Header() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to={routes.DASHBOARD} className="cursor-pointer">
-                      <ArrowBigRight className="mr-2 h-4 w-4" />
-                      <span>Tới trang quản trị</span>
-                    </Link>
+                    {currentUser?.role === "ADMIN" && (
+                      <Link to={routes.DASHBOARD} className="cursor-pointer">
+                        <ArrowBigRight className="mr-2 h-4 w-4" />
+                        <span>Tới trang quản trị</span>
+                      </Link>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to={routes.ACCOUNT} className="cursor-pointer">

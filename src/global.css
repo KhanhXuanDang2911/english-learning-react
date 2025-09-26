@@ -148,6 +148,36 @@ body {
   overflow-x: auto;
 }
 
+.prose .editor-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.prose p[style*="text-align:center"] .editor-image,
+.prose [style*="text-align:center"] .editor-image,
+.prose .editor-image[style*="text-align:center"],
+.prose .editor-image[style*="text-align: center"] {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.prose p[style*="text-align:right"] .editor-image,
+.prose [style*="text-align:right"] .editor-image,
+.prose .editor-image[style*="text-align:right"],
+.prose .editor-image[style*="text-align: right"] {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+.prose p[style*="text-align:left"] .editor-image,
+.prose [style*="text-align:left"] .editor-image,
+.prose .editor-image[style*="text-align:left"],
+.prose .editor-image[style*="text-align: left"] {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
 .dark .ProseMirror {
   background-color: #0f172a;
   border-color: #334155;
@@ -245,10 +275,12 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -268,7 +300,6 @@ body {
 }
 
 @keyframes glow {
-
   0%,
   100% {
     box-shadow: 0 0 20px rgba(21, 94, 148, 0.3);
@@ -290,7 +321,6 @@ body {
 }
 
 @keyframes floatUpDown {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -318,13 +348,79 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+/* Table of contents styles */
+.toc-card {
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border: 1px solid rgba(21, 94, 148, 0.08);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.toc-card h3 {
+  color: #0f172a;
+}
+
+.toc-list a {
+  display: inline-block;
+  padding: 0.25rem 0.25rem;
+  border-radius: 0.25rem;
+  color: #374151;
+}
+
+.toc-list a:hover {
+  color: #0f172a;
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.toc-list .toc-level-1 {
+  font-weight: 700;
+}
+
+.toc-list .toc-level-2 {
+  padding-left: 1rem;
+  color: #475569;
+}
+
+.toc-list .toc-level-3 {
+  padding-left: 2rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* Active heading highlight when hash matches */
+.toc-list a.is-active {
+  background: linear-gradient(
+    90deg,
+    rgba(79, 70, 229, 0.12),
+    rgba(79, 70, 229, 0.06)
+  );
+  color: #3730a3;
+}
+
+/* Dark mode support */
+.dark .toc-card {
+  background: linear-gradient(180deg, #0b1220, #061025);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.dark .toc-list a {
+  color: #d1d5db;
+}
+
+.dark .toc-list .toc-level-2 {
+  color: #9ca3af;
+}
+
+.dark .toc-list .toc-level-3 {
+  color: #9ca3af;
+}
+
 .animate-float-up-down {
   animation: floatUpDown 3s ease-in-out infinite;
 }
 
 /* Contact specific animations */
 @keyframes contactCardFloat {
-
   0%,
   100% {
     transform: translateY(0px);
@@ -336,7 +432,6 @@ body {
 }
 
 @keyframes iconPulse {
-
   0%,
   100% {
     transform: scale(1);

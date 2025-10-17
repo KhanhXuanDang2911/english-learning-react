@@ -1,55 +1,55 @@
 # English Learning (React)
 
-Ứng dụng học tiếng Anh hiện đại được xây dựng bằng React + TypeScript, Vite và Tailwind CSS. Bao gồm các tính năng: khoá học, chương, bài học, bài viết, flashcards, chính tả, xác thực người dùng (email/mật khẩu và Google OAuth), phân trang, tải nội dung theo yêu cầu và giao diện hiện đại.
+A modern English learning web app built with React + TypeScript, Vite, and Tailwind CSS. It includes courses, chapters, lessons, posts, flashcards, dictation, user authentication (email/password and Google OAuth), pagination, on‑demand loading, and a clean UI.
 
-## Công nghệ sử dụng
+## Tech Stack
 
 - React 19 + TypeScript + Vite 7
 - React Router v7 (`react-router-dom`)
-- TanStack React Query v5 (quản lý gọi API & caching)
-- Tailwind CSS v4, Radix UI (UI primitives), Lucide Icons
-- React Hook Form + Zod (form & validation)
-- Axios (HTTP) với cơ chế làm mới token, React-Toastify thông báo
-- Trình soạn thảo Tiptap, DnD Kit, Embla Carousel, NProgress
+- TanStack React Query v5 (data fetching & caching)
+- Tailwind CSS v4, Shadcn UI (UI primitives), Lucide Icons
+- React Hook Form + Zod (forms & validation)
+- Axios (HTTP) with refresh‑token flow, React‑Toastify for notifications
+- Tiptap editor, DnD Kit, Embla Carousel, NProgress
 
-## Tính năng
+## Features
 
-- Đăng ký/Đăng nhập, xác thực Google, tự động làm mới token, đăng xuất an toàn
-- Quản lý khoá học, chương, bài học; bài viết/danh mục; flashcards; chính tả
-- Phân trang động, lazy loading, loading toàn cục, thông báo toast
-- Bảo vệ route (public/private/admin) với auth guard
+- Sign up / Sign in, Google OAuth, automatic token refresh, secure sign out
+- Manage courses, chapters, lessons; posts/categories; flashcards; dictation
+- Dynamic pagination, lazy loading, global loading indicator, toast messages
+- Route protection (public/private/admin) with auth guards
 
-## Yêu cầu hệ thống
+## Requirements
 
-- Node.js >= 18.18 (khuyến nghị LTS)
-- npm v9+ hoặc pnpm/yarn (ví dụ dưới dùng npm)
+- Node.js >= 18.18 (LTS recommended)
+- npm v9+ or pnpm/yarn (examples below use npm)
 
-## Cài đặt & chạy
+## Setup & Run
 
-1. Cài phụ thuộc
+1. Install dependencies
 
 ```bash
 npm install
 ```
 
-2. Biến môi trường
+2. Environment variables
 
-- Tạo file `.env` ở thư mục gốc dự án từ `.env.example`:
+- Create a `.env` file at the project root based on `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
-- Điền biến sau:
-  - `VITE_GOOGLE_CLIENT_ID`: Client ID của Google OAuth (dùng trong `src/App.tsx` qua `GoogleOAuthProvider`).
+- Fill in the variable below:
+  - `VITE_GOOGLE_CLIENT_ID`: Google OAuth Client ID (used in `src/App.tsx` via `GoogleOAuthProvider`).
 
-3. Chạy server phát triển
+3. Start development server
 
 ```bash
 npm run dev
 ```
 
-- Ứng dụng mặc định chạy tại http://localhost:3000 (xem `vite.config.ts`).
+- The app runs at http://localhost:3000 by default (see `vite.config.ts`).
 
 4. Build & Preview
 
@@ -58,44 +58,44 @@ npm run build
 npm run preview
 ```
 
-## Cấu hình Backend API
+## Backend API Configuration
 
-- API base URL hiện đặt trong `src/api/http.ts`:
+- API base URL is currently set in `src/api/http.ts`:
   - `baseURL: "http://localhost:8080/e-learning"`
-  - Các endpoint prefix `/api/v1` (xem `src/api/path.ts`).
-- Khi triển khai nhiều môi trường, có thể chỉnh trực tiếp `baseURL` hoặc refactor đọc từ biến môi trường để linh hoạt hơn.
+  - All endpoints are prefixed with `/api/v1` (see `src/api/path.ts`).
+- For multiple environments, either adjust this `baseURL` directly or refactor to read from env variables for more flexible deployments.
 
-## Cấu trúc dự án (rút gọn)
+## Project Structure (short)
 
 ```
 src/
-  api/           # axios instance, path, các module api
+  api/           # axios instance, paths, api modules
   components/    # UI components (Header, Footer, CourseItem, Editor, ...)
   context/       # AuthContext, AppContext
   hooks/         # custom hooks (use-mobile, use-pagination, ...)
   layouts/       # MainLayout, AdminLayout
-  pages/         # trang chức năng (Courses, Posts, Lesson, Admin, ...)
-  routes/        # định tuyến & guards
+  pages/         # feature pages (Courses, Posts, Lesson, Admin, ...)
+  routes/        # routing & guards
   types/         # type definitions (auth, course, post, ...)
-  utils/         # tiện ích (token, appUtils, ...)
+  utils/         # utilities (token, appUtils, ...)
 ```
 
 ## Scripts
 
-- `npm run dev`: Chạy server phát triển (Vite)
-- `npm run build`: Build production (`tsc -b` + `vite build`)
-- `npm run preview`: Preview build production
-- `npm run lint`: Chạy ESLint
+- `npm run dev`: Start development server (Vite)
+- `npm run build`: Production build (`tsc -b` + `vite build`)
+- `npm run preview`: Preview production build
+- `npm run lint`: Run ESLint
 
 ## Linting
 
-- Dùng ESLint 9 + TypeScript ESLint:
+- Uses ESLint 9 + TypeScript ESLint:
 
 ```bash
 npm run lint
 ```
 
-## Ghi chú triển khai
+## Deployment Notes
 
-- Bật CORS trên Backend để cho phép domain front-end (mặc định http://localhost:3000) gọi API.
-- Google OAuth: đảm bảo Authorized JavaScript origins và redirect URIs khớp domain đang chạy.
+- Enable CORS on the backend to allow calls from the frontend domain (default http://localhost:3000).
+- Google OAuth: ensure Authorized JavaScript origins and redirect URIs match your running domain(s).

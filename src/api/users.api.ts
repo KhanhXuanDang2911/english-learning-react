@@ -9,10 +9,17 @@ import http from "./http";
 import { USERS_PATH } from "./path";
 import type {
   PaginationResponse,
+  SuccessResponse,
   SuccessResponseNoData,
 } from "@/types/common.type";
 
 export class UserApi {
+  static getTeachers = async () => {
+    const response = await http.get<SuccessResponse<User[]>>(
+      USERS_PATH.TEACHERS
+    );
+    return response.data;
+  };
   static getProfile = async () => {
     const response = await http.get<UserResponse>(USERS_PATH.ME);
     return response.data;

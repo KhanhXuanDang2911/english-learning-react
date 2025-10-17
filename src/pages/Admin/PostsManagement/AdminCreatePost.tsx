@@ -56,7 +56,6 @@ export default function AdminCreatePost() {
         navigate(routes.POSTS_MANAGEMENT);
       }
     }
-    // run when route or id changes
   }, [location.pathname, id, navigate]);
 
   useQuery({
@@ -345,7 +344,6 @@ export default function AdminCreatePost() {
             </CardContent>
           </Card>
 
-          {/* Large upload area below content (preview shown inside) */}
           <div className="mt-6">
             <input
               id="thumbnail"
@@ -463,8 +461,6 @@ export default function AdminCreatePost() {
                   </p>
                 )}
               </div>
-
-              {/* thumbnail selector removed from settings (now under content) */}
 
               <div className="space-y-2">
                 <Label htmlFor="authorId">Tác giả</Label>

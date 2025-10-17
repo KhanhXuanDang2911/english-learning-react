@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import CourseItem from "@/components/CourseItem";
-import type { Course } from "@/components/FeaturedCourses/FeaturedCourses";
 import {
   Select,
   SelectContent,
@@ -21,152 +20,110 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import DynamicPagination from "@/components/DynamicPagination";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { CategoriesCourseApi } from "@/api/categoriesCourse.api";
+import { useSearchParams } from "react-router-dom";
+import { CourseApi } from "@/api/course.api";
+import Pagination from "@/components/Pagination/Pagination";
 import CourseItemSkeleton from "@/components/Skeleton/CourseItemSkeleton";
+import { toast } from "react-toastify";
 
-const categories = [
-  "Tất cả",
-  "Giao tiếp cơ bản",
-  "TOEIC",
-  "IELTS",
-  "Từ vựng",
-  "Ngữ pháp",
-  "Phát âm",
-  "Tiếng Anh doanh nghiệp",
-];
-
-const durations = ["Tất cả", "Dưới 10 giờ", "10-20 giờ", "Trên 20 giờ"];
-const prices = ["Tất cả", "Miễn phí", "Dưới 500k", "500k-1tr", "Trên 1tr"];
-
-const allCourses: Course[] = [
-  {
-    id: "c1",
-    title: "Tiếng Anh giao tiếp cho người mới bắt đầu",
-    summary:
-      "Khoá học giúp bạn xây dựng nền tảng giao tiếp tiếng Anh cơ bản, tự tin nói chuyện trong các tình huống hàng ngày.",
-    label: "Cơ bản",
-    instructor: "Nguyễn Văn A",
-    published: "20 Tháng 7, 2025",
-    url: "/courses/tieng-anh-giao-tiep-co-ban",
-    image:
-      "https://dinoenglish.app/_next/image?url=%2Fassets%2Fblog%2Ftu-tin-giao-tiep-tieng-anh-voi-3000-tu-vung-thong-dung-nhat.png&w=1920&q=75",
-    lessonsCount: 24,
-    students: 1250,
-    likes: 45,
-    rating: 4.7,
-    ratingCount: 446671,
-    hours: 61.5,
-  },
-  {
-    id: "c2",
-    title: "Luyện thi TOEIC cấp tốc 2025",
-    summary:
-      "Khoá học luyện thi TOEIC với lộ trình rõ ràng, tài liệu cập nhật mới nhất, cam kết đầu ra.",
-    label: "TOEIC",
-    instructor: "Trần Thị B",
-    published: "18 Tháng 7, 2025",
-    url: "/courses/luyen-thi-toeic-cap-toc",
-    image:
-      "https://dinoenglish.app/_next/image?url=%2Fassets%2Fblog%2Ftu-tin-giao-tiep-tieng-anh-voi-3000-tu-vung-thong-dung-nhat.png&w=1920&q=75",
-    lessonsCount: 30,
-    students: 890,
-    likes: 32,
-    rating: 4.8,
-    ratingCount: 12345,
-    hours: 40,
-  },
-  {
-    id: "c3",
-    title: "Từ vựng tiếng Anh cho người đi làm",
-    summary:
-      "Nâng cao vốn từ vựng chuyên ngành, giao tiếp hiệu quả trong môi trường công sở quốc tế.",
-    label: "Từ vựng",
-    instructor: "Lê Văn C",
-    published: "15 Tháng 7, 2025",
-    url: "/courses/tu-vung-tieng-anh-nguoi-di-lam",
-    image:
-      "https://dinoenglish.app/_next/image?url=%2Fassets%2Fblog%2Ftu-tin-giao-tiep-tieng-anh-voi-3000-tu-vung-thong-dung-nhat.png&w=1920&q=75",
-    lessonsCount: 18,
-    students: 567,
-    likes: 20,
-    rating: 4.5,
-    ratingCount: 9876,
-    hours: 25,
-  },
-  {
-    id: "c4",
-    title: "IELTS Speaking - Chinh phục band 7.0+",
-    summary:
-      "Khóa học chuyên sâu về kỹ năng Speaking IELTS, phương pháp luyện tập hiệu quả để đạt band cao.",
-    label: "IELTS",
-    instructor: "Emma Smith",
-    published: "12 Tháng 7, 2025",
-    url: "/courses/ielts-speaking-band-7",
-    image:
-      "https://dinoenglish.app/_next/image?url=%2Fassets%2Fblog%2Ftu-tin-giao-tiep-tieng-anh-voi-3000-tu-vung-thong-dung-nhat.png&w=1920&q=75",
-    lessonsCount: 22,
-    students: 1100,
-    likes: 67,
-    rating: 4.9,
-    ratingCount: 8765,
-    hours: 35,
-  },
-  {
-    id: "c5",
-    title: "Ngữ pháp tiếng Anh từ cơ bản đến nâng cao",
-    summary:
-      "Hệ thống hóa toàn bộ ngữ pháp tiếng Anh, từ những kiến thức cơ bản đến nâng cao.",
-    label: "Ngữ pháp",
-    instructor: "James Anderson",
-    published: "10 Tháng 7, 2025",
-    url: "/courses/ngu-phap-tieng-anh-toan-dien",
-    image:
-      "https://dinoenglish.app/_next/image?url=%2Fassets%2Fblog%2Ftu-tin-giao-tiep-tieng-anh-voi-3000-tu-vung-thong-dung-nhat.png&w=1920&q=75",
-    lessonsCount: 45,
-    students: 2300,
-    likes: 89,
-    rating: 4.6,
-    ratingCount: 15432,
-    hours: 80,
-  },
-  {
-    id: "c6",
-    title: "Phát âm tiếng Anh chuẩn như người bản ngữ",
-    summary:
-      "Khóa học phát âm chuyên sâu, sửa lỗi phát âm phổ biến của người Việt.",
-    label: "Phát âm",
-    instructor: "Sarah Johnson",
-    published: "8 Tháng 7, 2025",
-    url: "/courses/phat-am-tieng-anh-chuan",
-    image:
-      "https://dinoenglish.app/_next/image?url=%2Fassets%2Fblog%2Ftu-tin-giao-tiep-tieng-anh-voi-3000-tu-vung-thong-dung-nhat.png&w=1920&q=75",
-    lessonsCount: 16,
-    students: 780,
-    likes: 45,
-    rating: 4.8,
-    ratingCount: 6543,
-    hours: 20,
-  },
+const sortOptions = [
+  { value: "default", label: "Mặc định" },
+  { value: "createdAt:desc", label: "Mới nhất" },
+  { value: "createdAt:asc", label: "Cũ nhất" },
+  { value: "updatedAt:desc", label: "Cập nhật mới" },
+  { value: "title:asc", label: "Tên A-Z" },
+  { value: "title:desc", label: "Tên Z-A" },
+  { value: "price:asc", label: "Giá thấp đến cao" },
+  { value: "price:desc", label: "Giá cao đến thấp" },
+  { value: "discountPrice:asc", label: "Giảm giá thấp-cao" },
+  { value: "discountPrice:desc", label: "Giảm giá cao-thấp" },
 ];
 
 export default function Courses() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Tất cả");
-  const [selectedDuration, setSelectedDuration] = useState("Tất cả");
-  const [selectedPrice, setSelectedPrice] = useState("Tất cả");
-  const [sortBy, setSortBy] = useState("popular");
+  const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const [sortBy, setSortBy] = useState<string>("default");
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const handlePageChange = (page: number) => {
-    console.log("Do sth with " + page);
+  const pageNumber = Number(searchParams.get("pageNumber")) || 1;
+  const pageSize = Number(searchParams.get("pageSize")) || 9;
+  const keywordParam = searchParams.get("keyword") || "";
+  const categoryParam = searchParams.get("categoryId")
+    ? Number(searchParams.get("categoryId"))
+    : 0;
+  const sortsParam = searchParams.get("sorts") || "";
+
+  const prevPageRef = useRef<number>(pageNumber);
+  const prevCategoryRef = useRef<number>(categoryParam || 0);
+  const disableEntryAnimation =
+    prevPageRef.current !== pageNumber ||
+    prevCategoryRef.current !== (categoryParam || 0);
+
+  useEffect(() => {
+    prevPageRef.current = pageNumber;
+    prevCategoryRef.current = categoryParam || 0;
+  }, [pageNumber, categoryParam]);
+
+  useEffect(() => {
+    setSearchTerm(keywordParam);
+    setSelectedCategory(categoryParam || 0);
+    setSortBy(sortsParam || "default");
+  }, [keywordParam, categoryParam, sortsParam]);
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories-course"],
+    queryFn: () => CategoriesCourseApi.getCategories(1, 1000000, "", ""),
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: coursesData, isInitialLoading } = useQuery({
+    queryKey: [
+      "courses-public",
+      pageNumber,
+      pageSize,
+      keywordParam,
+      sortsParam,
+      categoryParam,
+    ],
+    queryFn: () =>
+      CourseApi.getPublic(
+        pageNumber,
+        pageSize,
+        keywordParam,
+        sortsParam || undefined,
+        categoryParam || undefined,
+        undefined
+      ).catch((error) => {
+        toast.error("Tải danh sách khóa học thất bại");
+        throw error;
+      }),
+    placeholderData: keepPreviousData,
+  });
+
+  const applyFilters = (values: {
+    keyword?: string;
+    categoryId?: number;
+    sorts?: string;
+  }) => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.delete("pageNumber");
+      const kw = (values.keyword ?? searchTerm).trim();
+      if (kw) newParams.set("keyword", kw);
+      else newParams.delete("keyword");
+      if (values.categoryId && values.categoryId > 0)
+        newParams.set("categoryId", String(values.categoryId));
+      else newParams.delete("categoryId");
+      if (values.sorts && values.sorts !== "default")
+        newParams.set("sorts", values.sorts);
+      else newParams.delete("sorts");
+      return newParams;
+    });
   };
-
-  const currentPage = 1;
-  const itemsPerPage = 10;
-  const totalResults = allCourses.length;
-  const startResult = (currentPage - 1) * itemsPerPage + 1;
-  const endResult = Math.min(currentPage * itemsPerPage, totalResults);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -203,8 +160,7 @@ export default function Courses() {
               </span>
             </h1>
             <p className="text-xl mb-8 opacity-90 animate-slide-up">
-              Hơn {allCourses.length} khóa học chất lượng cao từ các giảng viên
-              hàng đầu
+              Khám phá các khóa học chất lượng cao từ các giảng viên hàng đầu
             </p>
 
             {/* Search Bar */}
@@ -213,13 +169,24 @@ export default function Courses() {
               style={{ animationDelay: "0.3s" }}
             >
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                type="text"
-                placeholder="Tìm kiếm khóa học, giảng viên..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-4 py-4 text-[16px] bg-white/95 backdrop-blur-sm text-gray-900 border-0 rounded-xl shadow-lg focus:shadow-xl transition-all duration-300"
-              />
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  applyFilters({
+                    keyword: searchTerm,
+                    categoryId: selectedCategory,
+                    sorts: sortBy,
+                  });
+                }}
+              >
+                <Input
+                  type="text"
+                  placeholder="Tìm kiếm khóa học, giảng viên..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-12 pr-4 py-4 text-[16px] bg-white/95 backdrop-blur-sm text-gray-900 border-0 rounded-xl shadow-lg focus:shadow-xl transition-all duration-300"
+                />
+              </form>
             </div>
           </div>
         </div>
@@ -260,88 +227,64 @@ export default function Courses() {
                   {/* Category Filter */}
                   <div>
                     <h4 className="font-medium mt-7 lg:mt-0 mb-3">Danh mục</h4>
+                    <button
+                      key={0}
+                      onClick={() => {
+                        setSelectedCategory(0);
+                        applyFilters({
+                          keyword: searchTerm,
+                          categoryId: 0,
+                          sorts: sortBy,
+                        });
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                        selectedCategory === 0
+                          ? "bg-primary-color text-white shadow-md"
+                          : "hover:bg-white/50 hover:shadow-sm"
+                      }`}
+                    >
+                      Tất cả
+                    </button>
                     <div className="space-y-2">
-                      {categories.map((category) => (
+                      {categoriesData?.data.items.map((category) => (
                         <button
-                          key={category}
-                          onClick={() => setSelectedCategory(category)}
+                          key={category.id}
+                          onClick={() => {
+                            setSelectedCategory(category.id);
+                            applyFilters({
+                              keyword: searchTerm,
+                              categoryId: category.id,
+                              sorts: sortBy,
+                            });
+                          }}
                           className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                            selectedCategory === category
+                            selectedCategory === category.id
                               ? "bg-primary-color text-white shadow-md"
                               : "hover:bg-white/50 hover:shadow-sm"
                           }`}
                         >
-                          {category}
+                          {category.title}
                         </button>
                       ))}
                     </div>
                   </div>
-
-                  {/* Duration Filter */}
-                  <div>
-                    <h4 className="font-medium mb-3">Thời lượng</h4>
-                    <Select
-                      value={selectedDuration}
-                      onValueChange={setSelectedDuration}
-                    >
-                      <SelectTrigger className="cursor-pointer bg-white/50 border-white/30">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {durations.map((duration) => (
-                          <SelectItem
-                            key={duration}
-                            value={duration}
-                            className="cursor-pointer"
-                          >
-                            {duration}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Price Filter */}
-                  <div>
-                    <h4 className="font-medium mb-3">Giá</h4>
-                    <Select
-                      value={selectedPrice}
-                      onValueChange={setSelectedPrice}
-                    >
-                      <SelectTrigger className="cursor-pointer bg-white/50 border-white/30">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {prices.map((price) => (
-                          <SelectItem
-                            key={price}
-                            value={price}
-                            className="cursor-pointer"
-                          >
-                            {price}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    className="bg-primary-color hover:bg-hover-primary-color w-full cursor-pointer shadow-md hover:shadow-lg transition-all duration-300"
-                    onClick={() => {
-                      console.log("Tìm kiếm");
-                    }}
-                  >
-                    Tìm kiếm
-                  </Button>
 
                   {/* Clear Filters */}
                   <Button
                     variant="outline"
                     className="w-full bg-white/50 border-white/30 hover:bg-white/70 cursor-pointer transition-all duration-300"
                     onClick={() => {
-                      setSelectedCategory("Tất cả");
-                      setSelectedDuration("Tất cả");
-                      setSelectedPrice("Tất cả");
+                      setSelectedCategory(0);
                       setSearchTerm("");
+                      setSortBy("default");
+                      setSearchParams((prev) => {
+                        const newParams = new URLSearchParams(prev);
+                        newParams.delete("keyword");
+                        newParams.delete("categoryId");
+                        newParams.delete("sorts");
+                        newParams.delete("pageNumber");
+                        return newParams;
+                      });
                     }}
                   >
                     Xóa bộ lọc
@@ -359,15 +302,12 @@ export default function Courses() {
               <div className="flex flex-col">
                 <div className="flex flex-wrap items-center gap-3">
                   <h2 className="text-2xl font-bold">
-                    {allCourses.length} khóa học
+                    {coursesData?.data.numberOfElements ?? 0} khóa học
                   </h2>
-                  <div className="text-sm text-gray-600 bg-white/70 px-3 py-1 rounded-full whitespace-nowrap">
-                    Showing {startResult}-{endResult} of {totalResults} results
-                  </div>
                 </div>
-                {searchTerm && (
+                {keywordParam && (
                   <p className="text-gray-600 mt-1">
-                    Kết quả tìm kiếm cho "{searchTerm}"
+                    Kết quả tìm kiếm cho "{keywordParam}"
                   </p>
                 )}
               </div>
@@ -404,25 +344,31 @@ export default function Courses() {
                   </Button>
                 </div>
 
-                {/* Sort */}
+                {/* Sort (whitelist) */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-sm text-gray-600 whitespace-nowrap">
                     Sắp xếp:
                   </span>
-                  <Select value={sortBy} onValueChange={setSortBy}>
+                  <Select
+                    value={sortBy}
+                    onValueChange={(v) => {
+                      setSortBy(v);
+                      applyFilters({
+                        keyword: searchTerm,
+                        categoryId: selectedCategory,
+                        sorts: v,
+                      });
+                    }}
+                  >
                     <SelectTrigger className="w-48 bg-white/70 border-white/30">
-                      <SelectValue />
+                      <SelectValue placeholder="Sắp xếp theo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="popular">Phổ biến nhất</SelectItem>
-                      <SelectItem value="rating">Đánh giá cao nhất</SelectItem>
-                      <SelectItem value="newest">Mới nhất</SelectItem>
-                      <SelectItem value="price-low">
-                        Giá thấp đến cao
-                      </SelectItem>
-                      <SelectItem value="price-high">
-                        Giá cao đến thấp
-                      </SelectItem>
+                      {sortOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -431,28 +377,47 @@ export default function Courses() {
 
             {/* Active Filters */}
             <div className="flex flex-wrap gap-2 mb-6">
-              {selectedCategory !== "Tất cả" && (
+              {selectedCategory !== 0 && (
                 <Badge
                   variant="secondary"
                   className="px-3 py-1 bg-white/70 hover:bg-white/90 transition-colors"
                 >
-                  {selectedCategory}
+                  {
+                    categoriesData?.data.items.find(
+                      (c) => c.id === selectedCategory
+                    )?.title
+                  }
                   <button
-                    onClick={() => setSelectedCategory("Tất cả")}
+                    onClick={() => {
+                      setSelectedCategory(0);
+                      applyFilters({
+                        keyword: searchTerm,
+                        categoryId: 0,
+                        sorts: sortBy,
+                      });
+                    }}
                     className="ml-2 hover:text-red-500 transition-colors"
                   >
                     ×
                   </button>
                 </Badge>
               )}
-              {searchTerm && (
+              {keywordParam && (
                 <Badge
                   variant="secondary"
                   className="px-3 py-1 bg-white/70 hover:bg-white/90 transition-colors"
                 >
-                  "{searchTerm}"
+                  "{keywordParam}"
                   <button
-                    onClick={() => setSearchTerm("")}
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSearchParams((prev) => {
+                        const newParams = new URLSearchParams(prev);
+                        newParams.delete("keyword");
+                        newParams.delete("pageNumber");
+                        return newParams;
+                      });
+                    }}
                     className="ml-2 hover:text-red-500 transition-colors"
                   >
                     ×
@@ -462,7 +427,7 @@ export default function Courses() {
             </div>
 
             {/* Course Grid/List */}
-            {allCourses.length > 0 ? (
+            {isInitialLoading ? (
               <div
                 className={`transition-all duration-500 ${
                   viewMode === "grid"
@@ -470,11 +435,33 @@ export default function Courses() {
                     : "space-y-4"
                 }`}
               >
-                {allCourses.map((course, index) => (
+                {Array.from({ length: viewMode === "grid" ? 6 : 3 }).map(
+                  (_, i) => (
+                    <div key={`skeleton-${i}`}>
+                      <CourseItemSkeleton />
+                    </div>
+                  )
+                )}
+              </div>
+            ) : coursesData?.data.items && coursesData.data.items.length > 0 ? (
+              <div
+                className={`transition-all duration-500 ${
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "space-y-4"
+                }`}
+              >
+                {coursesData.data.items.map((course, index) => (
                   <div
                     key={course.id}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className={
+                      disableEntryAnimation ? undefined : "animate-fade-in"
+                    }
+                    style={
+                      disableEntryAnimation
+                        ? undefined
+                        : { animationDelay: `${index * 0.1}s` }
+                    }
                   >
                     <CourseItem course={course} viewMode={viewMode} />
                   </div>
@@ -494,7 +481,16 @@ export default function Courses() {
                 <Button
                   onClick={() => {
                     setSearchTerm("");
-                    setSelectedCategory("Tất cả");
+                    setSelectedCategory(0);
+                    setSortBy("default");
+                    setSearchParams((prev) => {
+                      const newParams = new URLSearchParams(prev);
+                      newParams.delete("keyword");
+                      newParams.delete("categoryId");
+                      newParams.delete("sorts");
+                      newParams.delete("pageNumber");
+                      return newParams;
+                    });
                   }}
                   className="bg-primary-color hover:bg-hover-primary-color"
                 >
@@ -504,16 +500,13 @@ export default function Courses() {
             )}
 
             {/* Pagination */}
-            {allCourses.length > 0 && (
-              <div className="mt-12">
-                <DynamicPagination
-                  currentPage={1}
-                  totalPages={10}
-                  onPageChange={handlePageChange}
-                  maxVisiblePages={3}
-                  showFirstLast={false}
-                  buttonClassName="hover:bg-white/70 transition-all duration-200"
-                  activeButtonClassName="bg-primary-color text-white hover:bg-hover-primary-color shadow-md"
+            {coursesData?.data && coursesData.data.totalPages > 1 && (
+              <div className="mt-8">
+                <Pagination
+                  totalPages={coursesData.data.totalPages}
+                  pageParamName="pageNumber"
+                  maxVisiblePages={5}
+                  activeButtonClassName="bg-primary-color text-white hover:bg-hover-primary-color hover:text-white"
                 />
               </div>
             )}

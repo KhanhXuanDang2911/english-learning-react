@@ -1,69 +1,101 @@
-# React + TypeScript + Vite
+# English Learning (React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Ứng dụng học tiếng Anh hiện đại được xây dựng bằng React + TypeScript, Vite và Tailwind CSS. Bao gồm các tính năng: khoá học, chương, bài học, bài viết, flashcards, chính tả, xác thực người dùng (email/mật khẩu và Google OAuth), phân trang, tải nội dung theo yêu cầu và giao diện hiện đại.
 
-Currently, two official plugins are available:
+## Công nghệ sử dụng
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 + TypeScript + Vite 7
+- React Router v7 (`react-router-dom`)
+- TanStack React Query v5 (quản lý gọi API & caching)
+- Tailwind CSS v4, Radix UI (UI primitives), Lucide Icons
+- React Hook Form + Zod (form & validation)
+- Axios (HTTP) với cơ chế làm mới token, React-Toastify thông báo
+- Trình soạn thảo Tiptap, DnD Kit, Embla Carousel, NProgress
 
-## Expanding the ESLint configuration
+## Tính năng
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Đăng ký/Đăng nhập, xác thực Google, tự động làm mới token, đăng xuất an toàn
+- Quản lý khoá học, chương, bài học; bài viết/danh mục; flashcards; chính tả
+- Phân trang động, lazy loading, loading toàn cục, thông báo toast
+- Bảo vệ route (public/private/admin) với auth guard
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Yêu cầu hệ thống
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- Node.js >= 18.18 (khuyến nghị LTS)
+- npm v9+ hoặc pnpm/yarn (ví dụ dưới dùng npm)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Cài đặt & chạy
+
+1. Cài phụ thuộc
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Biến môi trường
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Tạo file `.env` ở thư mục gốc dự án từ `.env.example`:
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
+
+- Điền biến sau:
+  - `VITE_GOOGLE_CLIENT_ID`: Client ID của Google OAuth (dùng trong `src/App.tsx` qua `GoogleOAuthProvider`).
+
+3. Chạy server phát triển
+
+```bash
+npm run dev
+```
+
+- Ứng dụng mặc định chạy tại http://localhost:3000 (xem `vite.config.ts`).
+
+4. Build & Preview
+
+```bash
+npm run build
+npm run preview
+```
+
+## Cấu hình Backend API
+
+- API base URL hiện đặt trong `src/api/http.ts`:
+  - `baseURL: "http://localhost:8080/e-learning"`
+  - Các endpoint prefix `/api/v1` (xem `src/api/path.ts`).
+- Khi triển khai nhiều môi trường, có thể chỉnh trực tiếp `baseURL` hoặc refactor đọc từ biến môi trường để linh hoạt hơn.
+
+## Cấu trúc dự án (rút gọn)
+
+```
+src/
+  api/           # axios instance, path, các module api
+  components/    # UI components (Header, Footer, CourseItem, Editor, ...)
+  context/       # AuthContext, AppContext
+  hooks/         # custom hooks (use-mobile, use-pagination, ...)
+  layouts/       # MainLayout, AdminLayout
+  pages/         # trang chức năng (Courses, Posts, Lesson, Admin, ...)
+  routes/        # định tuyến & guards
+  types/         # type definitions (auth, course, post, ...)
+  utils/         # tiện ích (token, appUtils, ...)
+```
+
+## Scripts
+
+- `npm run dev`: Chạy server phát triển (Vite)
+- `npm run build`: Build production (`tsc -b` + `vite build`)
+- `npm run preview`: Preview build production
+- `npm run lint`: Chạy ESLint
+
+## Linting
+
+- Dùng ESLint 9 + TypeScript ESLint:
+
+```bash
+npm run lint
+```
+
+## Ghi chú triển khai
+
+- Bật CORS trên Backend để cho phép domain front-end (mặc định http://localhost:3000) gọi API.
+- Google OAuth: đảm bảo Authorized JavaScript origins và redirect URIs khớp domain đang chạy.

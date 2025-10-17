@@ -91,7 +91,7 @@ export class PostApi {
 
   static getRelatedPosts = async (id: number, limit: number = 6) => {
     const response = await http.get<ListPostResponse>(
-      POST_PATH.GET_PUBLIC_BY_ID(id),
+      POST_PATH.GET_RELATED_BY_ID(id),
       { params: { id, limit } }
     );
     return response.data;

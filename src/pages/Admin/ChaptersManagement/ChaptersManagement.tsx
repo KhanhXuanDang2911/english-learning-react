@@ -1,10 +1,42 @@
-import { useState } from "react"
-import { Link, useParams } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +45,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,303 +62,538 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   MoreHorizontal,
   Plus,
-  Search,
-  Filter,
   Edit,
   Trash2,
   BookOpen,
   Play,
   ArrowLeft,
   GripVertical,
-} from "lucide-react"
-import DynamicPagination from "@/components/DynamicPagination" 
+  Save,
+  FolderX,
+} from "lucide-react";
+import type {
+  ChangeOrderRequest,
+  Chapter,
+  ChapterRequest,
+} from "@/types/chapter.type";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChapterApi } from "@/api/chapter.api";
+import routes from "@/routes/routes.const";
+import type { AxiosError } from "axios";
+import type { ErrorResponse } from "@/types/common.type";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import {
+  chapterSchema,
+  deleteConfirmSchema,
+  type ChapterFormData,
+  type DeleteConfirmData,
+} from "./validationSchema";
 
-const mockChapters = [
-  {
-    id: 1,
-    title: "Introduction to React",
-    description: "Learn the basics of React framework",
-    order: 1,
-    lessonCount: 5,
-    duration: "2h 30m",
-    status: "Published",
-    createdDate: "2024-01-15",
-  },
-  {
-    id: 2,
-    title: "Components and Props",
-    description: "Understanding React components and props",
-    order: 2,
-    lessonCount: 8,
-    duration: "3h 45m",
-    status: "Published",
-    createdDate: "2024-01-16",
-  },
-  {
-    id: 3,
-    title: "State and Lifecycle",
-    description: "Managing component state and lifecycle methods",
-    order: 3,
-    lessonCount: 6,
-    duration: "2h 15m",
-    status: "Draft",
-    createdDate: "2024-01-17",
-  },
-  {
-    id: 4,
-    title: "Hooks and Context",
-    description: "Modern React with hooks and context API",
-    order: 4,
-    lessonCount: 10,
-    duration: "4h 20m",
-    status: "Published",
-    createdDate: "2024-01-18",
-  },
-]
+function SortableTableRow({
+  chapter,
+  onEdit,
+  onDelete,
+}: {
+  chapter: Chapter;
+  onEdit: (chapter: Chapter) => void;
+  onDelete: (id: number) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: chapter.id });
 
-interface ChapterFormData {
-  title: string
-  description: string
-  order: number
-}
-
-export default function ChaptersManagement() {
-  const { courseId } = useParams()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [selectedChapter, setSelectedChapter] = useState<any>(null)
-  const [formData, setFormData] = useState<ChapterFormData>({
-    title: "",
-    description: "",
-    order: mockChapters.length + 1,
-  })
-  const itemsPerPage = 10
-
-  const filteredChapters = mockChapters.filter(
-    (chapter) =>
-      chapter.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chapter.description.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
-
-  const totalPages = Math.ceil(filteredChapters.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedChapters = filteredChapters.slice(startIndex, startIndex + itemsPerPage)
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      Published: "bg-green-100 text-green-800",
-      Draft: "bg-yellow-100 text-yellow-800",
-      Review: "bg-blue-100 text-blue-800",
+      PUBLIC: "bg-green-100 text-green-800",
+      HIDDEN: "bg-yellow-100 text-yellow-800",
+    };
+    const labels = {
+      PUBLIC: "CÔNG KHAI",
+      HIDDEN: "ẨN",
+    };
+    return (
+      <Badge className={colors[status as keyof typeof colors]}>
+        {labels[status as keyof typeof labels]}
+      </Badge>
+    );
+  };
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={style}
+      className={`cursor-move ${isDragging ? "bg-muted/50" : ""}`}
+      {...attributes}
+      {...listeners}
+    >
+      <TableCell>
+        <div className="flex items-center">
+          <GripVertical className="h-4 w-4 text-muted-foreground mr-2" />
+          <Badge variant="outline">#{chapter.orderIndex}</Badge>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center space-x-3">
+          <BookOpen className="h-5 w-5 text-muted-foreground" />
+          <div>
+            <div className="font-medium">{chapter.title}</div>
+            <div className="text-sm text-muted-foreground">
+              {chapter.description}
+            </div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center">
+          <Play className="mr-1 h-4 w-4 text-muted-foreground" />
+          {chapter.numberOfLessons} bài học
+        </div>
+      </TableCell>
+      <TableCell>{(chapter.duration / 3600).toFixed(2)} tiếng</TableCell>
+      <TableCell>{getStatusBadge(chapter.status)}</TableCell>
+      <TableCell>{dayjs(chapter.createdAt).format("DD/MM/YYYY")}</TableCell>
+      <TableCell className="text-right">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <span className="sr-only">Mở menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link to={`/admin/chapters/${chapter.id}/lessons`}>
+                <Play className="mr-2 h-4 w-4" />
+                Quản lý bài học
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(chapter)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Chỉnh sửa chương
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => onDelete(chapter.id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Xóa chương
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default function ChaptersManagement() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { courseId } = useParams();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [chapterToDelete, setChapterToDelete] = useState<number>(0);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [hasOrderChanged, setHasOrderChanged] = useState(false);
+  const [originalOrder, setOriginalOrder] = useState<Chapter[]>([]);
+
+  useEffect(() => {
+    if (!courseId || isNaN(Number(courseId)) || Number(courseId) < 1) {
+      navigate(routes.COURSES_MANAGEMENT);
     }
-    return <Badge className={colors[status as keyof typeof colors]}>{status}</Badge>
-  }
+  }, [courseId, navigate]);
 
-  const handleCreateChapter = () => {
-    console.log("Creating chapter:", formData)
-    setIsCreateOpen(false)
-    setFormData({ title: "", description: "", order: mockChapters.length + 1 })
-  }
+  useQuery({
+    queryKey: ["chapters", courseId],
+    queryFn: () =>
+      ChapterApi.getChaptersByCourseId(Number(courseId))
+        .then((response) => {
+          setOriginalOrder(response.data);
+          setHasOrderChanged(false);
+          setChapters(response.data);
+          return response;
+        })
+        .catch((error: AxiosError<ErrorResponse>) => {
+          if (error.response?.data?.status == 403) {
+            toast.error("Không đủ quyền truy cập");
+          }
+          navigate(routes.COURSES_MANAGEMENT);
+        }),
+    enabled: courseId && !isNaN(Number(courseId)) && Number(courseId) > 0,
+  });
 
-  const handleEditChapter = (chapter: any) => {
-    setSelectedChapter(chapter)
-    setFormData({
+  const changeOrderMutation = useMutation({
+    mutationFn: (data: ChangeOrderRequest) =>
+      ChapterApi.updateOrder(data, Number(courseId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chapters", courseId] });
+      toast.success("Cập nhật thứ tự chương học thành công");
+    },
+    onError: () => {
+      toast.error("Cập nhật thứ tự chương học thất bại");
+    },
+  });
+
+  const updateChapterMutation = useMutation({
+    mutationFn: (data: { payload: ChapterRequest; id: number }) =>
+      ChapterApi.update(data.payload, data.id),
+    onSuccess: () => {
+      toast.success("Cập nhật chương học thành công");
+      setIsEditOpen(false);
+      setSelectedChapter(null);
+      editForm.reset();
+      queryClient.invalidateQueries({ queryKey: ["chapters", courseId] });
+    },
+    onError: () => {
+      toast.error("Cập nhật chương học thất bại");
+    },
+  });
+
+  const createChapterMutation = useMutation({
+    mutationFn: (data: ChapterRequest) => ChapterApi.create(data),
+    onSuccess: () => {
+      toast.success("Tạo chương học thành công");
+      setIsCreateOpen(false);
+      createForm.reset();
+      queryClient.invalidateQueries({ queryKey: ["chapters", courseId] });
+    },
+    onError: () => {
+      toast.error("Tạo chương học thất bại");
+    },
+  });
+
+  const deleteChapterMutation = useMutation({
+    mutationFn: (data: number) => ChapterApi.delete(data),
+    onSuccess: () => {
+      toast.success("Xoá chương học thành công");
+      setIsDeleteOpen(false);
+      setChapterToDelete(0);
+      deleteForm.reset();
+      queryClient.invalidateQueries({ queryKey: ["chapters", courseId] });
+    },
+    onError: () => {
+      toast.error("Xoá chương học thất bại");
+    },
+  });
+
+  const createForm = useForm<ChapterFormData>({
+    resolver: zodResolver(chapterSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      status: "PUBLIC",
+    },
+  });
+
+  const editForm = useForm<ChapterFormData>({
+    resolver: zodResolver(chapterSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      status: "PUBLIC",
+    },
+  });
+
+  const deleteForm = useForm<DeleteConfirmData>({
+    resolver: zodResolver(deleteConfirmSchema),
+    defaultValues: {
+      confirmText: "",
+    },
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setChapters((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+
+        const orderChanged = newItems.some(
+          (item, index) => item.id !== originalOrder[index]?.id
+        );
+        setHasOrderChanged(orderChanged);
+
+        return newItems;
+      });
+    }
+  };
+
+  const handleSaveOrder = () => {
+    console.log("Lưu thứ tự chương:", chapters);
+    const payload = chapters.map((item, index) => {
+      return { id: item.id, orderIndex: index + 1 };
+    });
+    changeOrderMutation.mutate(payload);
+  };
+
+  const handleResetOrder = () => {
+    setChapters([...originalOrder]);
+    setHasOrderChanged(false);
+  };
+
+  const handleCreateChapter = (data: ChapterFormData) => {
+    createChapterMutation.mutate({ ...data, courseId: Number(courseId) });
+  };
+
+  const handleEditChapter = (chapter: Chapter) => {
+    setSelectedChapter(chapter);
+    editForm.reset({
       title: chapter.title,
       description: chapter.description,
-      order: chapter.order,
-    })
-    setIsEditOpen(true)
-  }
+      status: chapter.status,
+    });
+    setIsEditOpen(true);
+  };
 
-  const handleUpdateChapter = () => {
-    console.log("Updating chapter:", selectedChapter.id, formData)
-    setIsEditOpen(false)
-    setSelectedChapter(null)
-    setFormData({ title: "", description: "", order: mockChapters.length + 1 })
-  }
+  const handleUpdateChapter = (data: ChapterFormData) => {
+    updateChapterMutation.mutate({ payload: data, id: selectedChapter?.id });
+  };
 
   const handleDeleteChapter = (chapterId: number) => {
-    console.log("Deleting chapter:", chapterId)
-  }
+    setChapterToDelete(chapterId);
+    deleteForm.reset({ confirmText: "" });
+    setIsDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteChapterMutation.mutate(chapterToDelete);
+  };
 
   return (
     <div className="space-y-6">
+      {/* Back button - Đưa lên trên và riêng dòng */}
+      <div>
+        <Link to="/admin/courses">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Quay lại quản lý khóa học
+          </Button>
+        </Link>
+      </div>
+
+      {/* Header với nút thêm và cập nhật thứ tự */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link to="/admin/courses">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Courses
-            </Button>
-          </Link>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Course Chapters</h2>
-            <p className="text-muted-foreground">Manage chapters for Course ID: {courseId}</p>
-          </div>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Quản lý chương học
+          </h2>
+          <p className="text-muted-foreground">
+            Quản lý các chương của khóa học ID: {courseId}
+          </p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#155e94] hover:bg-[#0b4674]">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Chapter
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create New Chapter</DialogTitle>
-              <DialogDescription>Add a new chapter to organize your course lessons.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
-                  Title
-                </Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="col-span-3"
-                  rows={3}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="order" className="text-right">
-                  Order
-                </Label>
-                <Input
-                  id="order"
-                  type="number"
-                  value={formData.order}
-                  onChange={(e) => setFormData({ ...formData, order: Number.parseInt(e.target.value) })}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleCreateChapter} className="bg-[#155e94] hover:bg-[#0b4674]">
-                Create Chapter
+        <div className="flex gap-2">
+          {hasOrderChanged && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleResetOrder}>
+                Hủy thay đổi
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <Button
+                onClick={handleSaveOrder}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Cập nhật thứ tự
+              </Button>
+            </div>
+          )}
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#155e94] hover:bg-[#0b4674]">
+                <Plus className="mr-2 h-4 w-4" />
+                Thêm chương
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Tạo chương mới</DialogTitle>
+                <DialogDescription>
+                  Thêm chương mới để tổ chức các bài học trong khóa học.
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                onSubmit={createForm.handleSubmit(handleCreateChapter)}
+                className="space-y-4"
+              >
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="create-title" className="text-right">
+                      Tiêu đề *
+                    </Label>
+                    <div className="col-span-3">
+                      <Input
+                        id="create-title"
+                        {...createForm.register("title")}
+                        className={
+                          createForm.formState.errors.title
+                            ? "border-red-500"
+                            : ""
+                        }
+                      />
+                      {createForm.formState.errors.title && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {createForm.formState.errors.title.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="create-description" className="text-right">
+                      Mô tả *
+                    </Label>
+                    <div className="col-span-3">
+                      <Textarea
+                        id="create-description"
+                        {...createForm.register("description")}
+                        className={
+                          createForm.formState.errors.description
+                            ? "border-red-500"
+                            : ""
+                        }
+                        rows={3}
+                      />
+                      {createForm.formState.errors.description && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {createForm.formState.errors.description.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="create-status" className="text-right">
+                      Trạng thái *
+                    </Label>
+                    <div className="col-span-3">
+                      <Controller
+                        name="status"
+                        control={createForm.control}
+                        render={({ field }) => (
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <SelectTrigger
+                              className={
+                                createForm.formState.errors.status
+                                  ? "border-red-500"
+                                  : ""
+                              }
+                            >
+                              <SelectValue placeholder="Chọn trạng thái" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="PUBLIC">CÔNG KHAI</SelectItem>
+                              <SelectItem value="HIDDEN">ẨN</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {createForm.formState.errors.status && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {createForm.formState.errors.status.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="bg-[#155e94] hover:bg-[#0b4674]"
+                  >
+                    Tạo chương
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Chapters</CardTitle>
-          <CardDescription>A list of all chapters in this course with their lessons and status.</CardDescription>
+          <CardTitle>Tất cả chương học</CardTitle>
+          <CardDescription>
+            Danh sách tất cả các chương trong khóa học. Nhấn và kéo bất kỳ hàng
+            nào để sắp xếp lại thứ tự các chương.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center space-x-2 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search chapters..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
-          </div>
-
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12"></TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Chapter</TableHead>
-                  <TableHead>Lessons</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedChapters.map((chapter) => (
-                  <TableRow key={chapter.id}>
-                    <TableCell>
-                      <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">#{chapter.order}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <BookOpen className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium">{chapter.title}</div>
-                          <div className="text-sm text-muted-foreground">{chapter.description}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Play className="mr-1 h-4 w-4 text-muted-foreground" />
-                        {chapter.lessonCount} lessons
-                      </div>
-                    </TableCell>
-                    <TableCell>{chapter.duration}</TableCell>
-                    <TableCell>{getStatusBadge(chapter.status)}</TableCell>
-                    <TableCell>{chapter.createdDate}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
-                            <Link to={`/admin/chapters/${chapter.id}/lessons`}>
-                              <Play className="mr-2 h-4 w-4" />
-                              Manage lessons
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditChapter(chapter)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit chapter
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteChapter(chapter.id)}>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete chapter
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="mt-4">
-              <DynamicPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          {chapters && chapters.length > 0 ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Thứ tự</TableHead>
+                      <TableHead>Chương</TableHead>
+                      <TableHead>Bài học</TableHead>
+                      <TableHead>Thời lượng</TableHead>
+                      <TableHead>Trạng thái</TableHead>
+                      <TableHead>Ngày tạo</TableHead>
+                      <TableHead className="text-right">Hành động</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <SortableContext
+                      items={chapters}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {chapters.map((chapter) => (
+                        <SortableTableRow
+                          key={chapter.id}
+                          chapter={chapter}
+                          onEdit={handleEditChapter}
+                          onDelete={handleDeleteChapter}
+                        />
+                      ))}
+                    </SortableContext>
+                  </TableBody>
+                </Table>
+              </div>
+            </DndContext>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+              <FolderX className="h-12 w-12 mb-3 text-gray-400" />
+              <p className="text-lg font-medium">Không có dữ liệu phù hợp</p>
             </div>
           )}
         </CardContent>
@@ -329,53 +603,149 @@ export default function ChaptersManagement() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Chapter</DialogTitle>
-            <DialogDescription>Make changes to the chapter here. Click save when you're done.</DialogDescription>
+            <DialogTitle>Chỉnh sửa chương</DialogTitle>
+            <DialogDescription>
+              Thực hiện thay đổi cho chương tại đây. Nhấn lưu khi hoàn tất.
+            </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-title" className="text-right">
-                Title
-              </Label>
+          <form
+            onSubmit={editForm.handleSubmit(handleUpdateChapter)}
+            className="space-y-4"
+          >
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-title" className="text-right">
+                  Tiêu đề *
+                </Label>
+                <div className="col-span-3">
+                  <Input
+                    id="edit-title"
+                    {...editForm.register("title")}
+                    className={
+                      editForm.formState.errors.title ? "border-red-500" : ""
+                    }
+                  />
+                  {editForm.formState.errors.title && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {editForm.formState.errors.title.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-description" className="text-right">
+                  Mô tả *
+                </Label>
+                <div className="col-span-3">
+                  <Textarea
+                    id="edit-description"
+                    {...editForm.register("description")}
+                    className={
+                      editForm.formState.errors.description
+                        ? "border-red-500"
+                        : ""
+                    }
+                    rows={3}
+                  />
+                  {editForm.formState.errors.description && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {editForm.formState.errors.description.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-status" className="text-right">
+                  Trạng thái *
+                </Label>
+                <div className="col-span-3">
+                  <Controller
+                    name="status"
+                    control={editForm.control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger
+                          className={
+                            editForm.formState.errors.status
+                              ? "border-red-500"
+                              : ""
+                          }
+                        >
+                          <SelectValue placeholder="Chọn trạng thái" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PUBLIC">CÔNG KHAI</SelectItem>
+                          <SelectItem value="HIDDEN">ẨN</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {editForm.formState.errors.status && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {editForm.formState.errors.status.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" className="bg-[#155e94] hover:bg-[#0b4674]">
+                Lưu thay đổi
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Xác nhận xoá chương</DialogTitle>
+            <DialogDescription>
+              Hành động này không thể hoàn tác. Vui lòng nhập "OK" để xác nhận
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={deleteForm.handleSubmit(handleConfirmDelete)}
+            className="space-y-4"
+          >
+            <div className="grid gap-2">
+              <Label htmlFor="delete-confirm">Nhập OK để xác nhận</Label>
               <Input
-                id="edit-title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="col-span-3"
+                id="delete-confirm"
+                placeholder="OK"
+                {...deleteForm.register("confirmText")}
+                className={
+                  deleteForm.formState.errors.confirmText
+                    ? "border-red-500"
+                    : ""
+                }
               />
+              {deleteForm.formState.errors.confirmText && (
+                <p className="text-sm text-red-500">
+                  {deleteForm.formState.errors.confirmText.message}
+                </p>
+              )}
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-description" className="text-right">
-                Description
-              </Label>
-              <Textarea
-                id="edit-description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="col-span-3"
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-order" className="text-right">
-                Order
-              </Label>
-              <Input
-                id="edit-order"
-                type="number"
-                value={formData.order}
-                onChange={(e) => setFormData({ ...formData, order: Number.parseInt(e.target.value) })}
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit" onClick={handleUpdateChapter} className="bg-[#155e94] hover:bg-[#0b4674]">
-              Save Changes
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDeleteOpen(false)}
+              >
+                Huỷ
+              </Button>
+              <Button type="submit" className="bg-red-600 hover:bg-red-700">
+                Xác nhận xoá
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

@@ -1,419 +1,582 @@
-import { useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Save, Eye, Upload } from "lucide-react"
-
-interface CourseFormData {
-  title: string
-  slug: string
-  description: string
-  shortDescription: string
-  category: string
-  level: string
-  language: string
-  price: string
-  discountPrice: string
-  status: string
-  featured: boolean
-  requirements: string
-  whatYouWillLearn: string
-  tags: string
-  thumbnail: string
-  previewVideo: string
-  duration: string
-  maxStudents: string
-}
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ArrowLeft, Save, Upload, Loader2 } from "lucide-react";
+import SimpleRichText from "@/components/RichTextEditor/SimpleRichText";
+import type { User } from "@/types/user.type";
+import { CategoriesCourseApi } from "@/api/categoriesCourse.api";
+import { UserApi } from "@/api/users.api";
+import { CourseApi } from "@/api/course.api";
+import type { CourseRequest } from "@/types/course.type";
+import { toast } from "react-toastify";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useQuery, keepPreviousData, useMutation } from "@tanstack/react-query";
+import { courseSchema, type CourseFormData } from "./schemaValidation";
 
 export default function CreateCourse() {
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const isEdit = Boolean(id)
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
 
-  const [formData, setFormData] = useState<CourseFormData>({
-    title: "",
-    slug: "",
-    description: "",
-    shortDescription: "",
-    category: "",
-    level: "Beginner",
-    language: "English",
-    price: "",
-    discountPrice: "",
-    status: "Draft",
-    featured: false,
-    requirements: "",
-    whatYouWillLearn: "",
-    tags: "",
-    thumbnail: "",
-    previewVideo: "",
-    duration: "",
-    maxStudents: "",
-  })
+  useEffect(() => {
+    if (!isEdit) return;
+    const nid = Number(id);
+    if (!id || isNaN(nid) || nid < 1) {
+      toast.error("Khoá học không hợp lệ");
+      navigate("/admin/courses");
+    }
+  }, [id, isEdit, navigate]);
 
-  const handleTitleChange = (title: string) => {
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
+  const { data: categoriesRes } = useQuery({
+    queryKey: ["categories_course", 1, 100000, ""],
+    queryFn: () => CategoriesCourseApi.getCategories(1, 100000, ""),
+    placeholderData: keepPreviousData,
+  });
 
-    setFormData((prev) => ({
-      ...prev,
-      title,
-      slug,
-    }))
-  }
+  const { data: teachersRes } = useQuery({
+    queryKey: ["teachers"],
+    queryFn: () => UserApi.getTeachers(),
+    placeholderData: keepPreviousData,
+  });
 
-  const handleSave = (status: string) => {
-    const dataToSave = { ...formData, status }
-    console.log("Saving course:", dataToSave)
-    navigate("/admin/courses")
-  }
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
 
-  const handlePreview = () => {
-    console.log("Preview course:", formData)
-  }
+  const form = useForm<any>({
+    resolver: zodResolver(courseSchema),
+    defaultValues: {
+      title: "",
+      whatYouWillLearn: "",
+      description: "",
+      requirements: "",
+      status: "PUBLIC",
+      categoryId: 0,
+      isFree: false,
+      price: 0,
+      discountPrice: null,
+      teacherId: 0,
+      thumbnailFile: undefined,
+      shortDescription: "",
+    },
+  });
+
+  useEffect(() => {
+    const subscription = form.watch((values, { name }) => {
+      if (
+        (name === "price" || name === "discountPrice" || name === "isFree") &&
+        values
+      ) {
+        const p = Number(values.price ?? 0);
+        const d = values.discountPrice as number | undefined | null;
+        if (values.isFree) {
+          console.log("Setting prices to 0 because isFree is true");
+          form.setValue("price", 0);
+          form.setValue("discountPrice", 0);
+          form.clearErrors(["price", "discountPrice"]);
+          return;
+        }
+        if (typeof d === "number" && d > p) {
+          form.setError("discountPrice", {
+            type: "manual",
+            message: "Giá đã giảm phải nhỏ hơn hoặc bằng giá gốc",
+          });
+        } else {
+          form.clearErrors("discountPrice");
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  const courseMutation = useMutation({
+    mutationFn: async (data: CourseFormData) => {
+      const payload: CourseRequest = {
+        title: data.title,
+        shortDescription: data.shortDescription ?? "",
+        detailDescription: data.description,
+        learningOutcomes: data.whatYouWillLearn,
+        requirements: data.requirements ?? "",
+        status: data.status,
+        price: data.isFree ? 0 : Number(data.price ?? 0),
+        discountPrice: data.isFree
+          ? 0
+          : data.discountPrice == null
+          ? null
+          : Number(data.discountPrice),
+        categoryId: Number(data.categoryId),
+        teacherId: Number(data.teacherId),
+        isFree: Boolean(data.isFree),
+      };
+
+      if (isEdit) {
+        return CourseApi.update(
+          Number(id),
+          payload,
+          data.thumbnailFile ?? null
+        );
+      } else {
+        if (!data.thumbnailFile) {
+          throw new Error("Vui lòng chọn ảnh thumbnail");
+        }
+        return CourseApi.create(payload, data.thumbnailFile);
+      }
+    },
+    onSuccess: () => {
+      toast.success(
+        isEdit ? "Cập nhật khóa học thành công" : "Tạo khóa học thành công"
+      );
+      navigate("/admin/courses");
+    },
+    onError: (e: any) => {
+      toast.error(e?.response?.data?.message || e?.message || "Có lỗi xảy ra");
+    },
+  });
+
+  const onSubmit = (data: CourseFormData) => {
+    courseMutation.mutate(data);
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setThumbnailPreview(url);
+      form.setValue("thumbnailFile", file);
+    }
+  };
+
+  useQuery({
+    queryKey: ["course", id],
+    queryFn: () =>
+      CourseApi.getById(Number(id))
+        .then((res) => {
+          const c = res.data;
+          form.reset({
+            title: c.title,
+            shortDescription: c.shortDescription ?? "",
+            whatYouWillLearn: c.learningOutcomes ?? "",
+            description: c.detailDescription ?? "",
+            requirements: c.requirements ?? "",
+            status: (c.status as any) ?? "PUBLIC",
+            categoryId: c.category?.id ?? 0,
+            isFree: Boolean(c.isFree),
+            price: c.price ?? 0,
+            discountPrice: c.discountPrice ?? null,
+            teacherId: c.teacher?.id ?? 0,
+            thumbnailFile: undefined,
+          });
+          if (c.thumbnailUrl) setThumbnailPreview(c.thumbnailUrl);
+          return res;
+        })
+        .catch((error) => {
+          navigate("/admin/courses");
+          throw error;
+        }),
+    enabled: Boolean(isEdit && id && !isNaN(Number(id)) && Number(id) > 0),
+  });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/courses")}>
+      <div>
+        <Link to="/admin/courses">
+          <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Courses
+            Quay lại quản lý khóa học
           </Button>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">{isEdit ? "Edit Course" : "Create New Course"}</h2>
-            <p className="text-muted-foreground">
-              {isEdit ? "Update your course details" : "Create a new online course"}
-            </p>
-          </div>
+        </Link>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            {isEdit ? "Cập nhật khoá học" : "Tạo khoá học mới"}
+          </h2>
+          <p className="text-muted-foreground">
+            {isEdit
+              ? "Chỉnh sửa thông tin khoá học"
+              : "Nhập thông tin chi tiết khoá học"}
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handlePreview}>
-            <Eye className="mr-2 h-4 w-4" />
-            Preview
-          </Button>
-          <Button variant="outline" onClick={() => handleSave("Draft")}>
-            Save Draft
-          </Button>
-          <Button className="bg-[#155e94] hover:bg-[#0b4674]" onClick={() => handleSave("Published")}>
-            <Save className="mr-2 h-4 w-4" />
-            {isEdit ? "Update" : "Publish"}
+          <Button
+            type="button"
+            className="bg-[#155e94] hover:bg-[#0b4674] disabled:cursor-not-allowed"
+            onClick={form.handleSubmit((d) => onSubmit(d as CourseFormData))}
+            disabled={courseMutation.isPending}
+          >
+            {courseMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isEdit ? "Đang cập nhật..." : "Đang tạo..."}
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {isEdit ? "Cập nhật" : "Xuất bản"}
+              </>
+            )}
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Enter the basic details about your course.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Course Title</Label>
-                <Input
-                  id="title"
-                  placeholder="Enter course title..."
-                  value={formData.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit((d) => onSubmit(d as CourseFormData))}
+          className="grid gap-6 lg:grid-cols-3"
+        >
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Thông tin cơ bản</CardTitle>
+                <CardDescription>
+                  Nhập các thông tin cơ bản của khoá học.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tiêu đề *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tiêu đề khoá học" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="slug">Course Slug</Label>
-                <Input
-                  id="slug"
-                  placeholder="course-url-slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="shortDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mô tả ngắn</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          rows={4}
+                          placeholder="Mô tả ngắn gọn"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="shortDescription">Short Description</Label>
-                <Input
-                  id="shortDescription"
-                  placeholder="Brief description of the course..."
-                  value={formData.shortDescription}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, shortDescription: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="whatYouWillLearn"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bạn sẽ học được gì *</FormLabel>
+                      <FormControl>
+                        <div>
+                          <SimpleRichText
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Mô tả các kiến thức/kỹ năng học viên nhận được"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Full Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Detailed course description..."
-                  value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  rows={6}
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mô tả chi tiết *</FormLabel>
+                      <FormControl>
+                        <div>
+                          <SimpleRichText
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Mô tả chi tiết nội dung khoá học"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="requirements"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Yêu cầu đầu vào</FormLabel>
+                      <FormControl>
+                        <div>
+                          <SimpleRichText
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            placeholder="Các yêu cầu/kỹ năng cần có trước khi học"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Hình ảnh</CardTitle>
+                <CardDescription>
+                  Tải lên và xem trước thumbnail của khoá học.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="duration">Duration (hours)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    placeholder="10"
-                    value={formData.duration}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxStudents">Max Students</Label>
-                  <Input
-                    id="maxStudents"
-                    type="number"
-                    placeholder="100"
-                    value={formData.maxStudents}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, maxStudents: e.target.value }))}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Course Content</CardTitle>
-              <CardDescription>Define what students will learn and course requirements.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="whatYouWillLearn">What You Will Learn</Label>
-                <Textarea
-                  id="whatYouWillLearn"
-                  placeholder="List the key learning outcomes (one per line)"
-                  value={formData.whatYouWillLearn}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, whatYouWillLearn: e.target.value }))}
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="requirements">Requirements</Label>
-                <Textarea
-                  id="requirements"
-                  placeholder="List course prerequisites (one per line)"
-                  value={formData.requirements}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, requirements: e.target.value }))}
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
-                <Input
-                  id="tags"
-                  placeholder="javascript, react, frontend"
-                  value={formData.tags}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, tags: e.target.value }))}
-                />
-                <p className="text-sm text-muted-foreground">Separate tags with commas</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Media</CardTitle>
-              <CardDescription>Upload course thumbnail and preview video.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Course Thumbnail</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="mt-2">
-                    <Button variant="outline" size="sm">
-                      Upload Image
-                    </Button>
+                  <Label>Ảnh thumbnail</Label>
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                    {thumbnailPreview ? (
+                      <img
+                        src={thumbnailPreview}
+                        alt="Thumbnail"
+                        className="mx-auto max-h-48 rounded"
+                      />
+                    ) : (
+                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    )}
+                    <div className="mt-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Chọn ảnh
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleThumbnailChange}
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      PNG, JPG tối đa 2MB (1280x720 khuyến nghị)
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">PNG, JPG up to 2MB (1280x720 recommended)</p>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="previewVideo">Preview Video URL</Label>
-                <Input
-                  id="previewVideo"
-                  placeholder="https://youtube.com/watch?v=..."
-                  value={formData.previewVideo}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, previewVideo: e.target.value }))}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cài đặt</CardTitle>
+                <CardDescription>
+                  Thiết lập trạng thái, danh mục, giảng viên và giá.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Trạng thái *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn trạng thái" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="PUBLIC">CÔNG KHAI</SelectItem>
+                          <SelectItem value="HIDDEN">TẠM ẨN</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Course Settings</CardTitle>
-              <CardDescription>Configure course visibility and categorization.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Draft">Draft</SelectItem>
-                    <SelectItem value="Review">Under Review</SelectItem>
-                    <SelectItem value="Published">Published</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Web Development">Web Development</SelectItem>
-                    <SelectItem value="Mobile Development">Mobile Development</SelectItem>
-                    <SelectItem value="Data Science">Data Science</SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Business">Business</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Language">Language</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="level">Level</Label>
-                <Select
-                  value={formData.level}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, level: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Beginner">Beginner</SelectItem>
-                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                    <SelectItem value="Advanced">Advanced</SelectItem>
-                    <SelectItem value="All Levels">All Levels</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select
-                  value={formData.language}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, language: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="Spanish">Spanish</SelectItem>
-                    <SelectItem value="French">French</SelectItem>
-                    <SelectItem value="German">German</SelectItem>
-                    <SelectItem value="Chinese">Chinese</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked }))}
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Danh mục *</FormLabel>
+                      <Select
+                        value={field.value ? String(field.value) : ""}
+                        onValueChange={(v) => field.onChange(Number(v))}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn danh mục" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categoriesRes?.data.items.map((c) => (
+                            <SelectItem key={c.id} value={c.id.toString()}>
+                              {c.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <Label htmlFor="featured">Featured Course</Label>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Pricing</CardTitle>
-              <CardDescription>Set the course price and discount options.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="price">Price ($)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  placeholder="99.99"
-                  value={formData.price}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="teacherId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Giảng viên *</FormLabel>
+                      <Select
+                        value={field.value ? String(field.value) : ""}
+                        onValueChange={(v) => field.onChange(Number(v))}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn giảng viên" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {teachersRes?.data.map((t: User) => (
+                            <SelectItem key={t.id} value={t.id.toString()}>
+                              {t.fullName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="discountPrice">Discount Price ($)</Label>
-                <Input
-                  id="discountPrice"
-                  type="number"
-                  placeholder="79.99"
-                  value={formData.discountPrice}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, discountPrice: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="isFree"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Loại khóa học</FormLabel>
+                      <Select
+                        value={field.value ? "true" : "false"}
+                        onValueChange={(v) => {
+                          const isFree = v === "true";
+                          field.onChange(isFree);
+                          if (isFree) {
+                            form.setValue("price", 0);
+                            form.setValue("discountPrice", 0);
+                            form.clearErrors(["price", "discountPrice"]);
+                          }
+                        }}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn loại" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="false">Trả phí</SelectItem>
+                          <SelectItem value="true">Miễn phí</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <p className="text-sm text-muted-foreground">Leave empty if no discount</p>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Publishing</CardTitle>
-              <CardDescription>Control when and how your course is published.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  Status: <span className="font-medium">{formData.status}</span>
-                </p>
-                <p>
-                  Visibility: <span className="font-medium">Public</span>
-                </p>
-                <p>
-                  Publish: <span className="font-medium">Immediately</span>
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleSave("Draft")} className="w-full">
-                  Save Draft
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => handleSave("Published")}
-                  className="w-full bg-[#155e94] hover:bg-[#0b4674]"
-                >
-                  {isEdit ? "Update Course" : "Publish Course"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Giá gốc (VND) *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="1000"
+                          min={0}
+                          disabled={form.watch("isFree")}
+                          value={field.value ?? 0}
+                          onChange={(e) =>
+                            field.onChange(e.target.valueAsNumber)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="discountPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Giá đã giảm (VND)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="1000"
+                          min={0}
+                          disabled={form.watch("isFree")}
+                          value={
+                            field.value === null || field.value === undefined
+                              ? ""
+                              : field.value
+                          }
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === "") field.onChange(null);
+                            else field.onChange(e.target.valueAsNumber);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </form>
+      </Form>
     </div>
-  )
+  );
 }

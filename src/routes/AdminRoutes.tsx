@@ -29,7 +29,6 @@ const AdminRoutes: RouteObject[] = [
       { path: routes.CREATE_COURSE, element: <CreateCourse /> },
       { path: routes.UPDATE_COURSE, element: <CreateCourse /> },
       { path: routes.CHAPTERS_BY_COURSE, element: <ChaptersManagement /> },
-      { path: routes.CHAPTERS_MANAGEMENT, element: <ChaptersManagement /> },
       { path: routes.LESSONS_BY_CHAPTER, element: <LessonsManagement /> },
       { path: routes.POSTS_MANAGEMENT, element: <PostsManagement /> },
       { path: routes.CREATE_POST, element: <AdminCreatePost /> },

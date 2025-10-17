@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,30 +124,31 @@ export default function PostDetail() {
   const [comments, _setComments] = useState<Comment[]>(initialComments);
 
   const isValidSlug = AppUtils.isValidSlug(slug);
+  const postId = useMemo(() => {
+    const id = Number((slug || "").split(".")[1]);
+    return id;
+  }, [slug]);
+  const hasValidId = Number.isFinite(postId) && !Number.isNaN(postId);
 
   useEffect(() => {
     if (!isValidSlug) navigate(routes.NOT_FOUND);
   }, [isValidSlug, navigate]);
 
   const { data: postDetailData } = useQuery({
-    queryKey: ["post"],
+    queryKey: ["post", postId],
     queryFn: () => {
-      const id: number = Number((slug || "").split(".")[1]);
-      return PostApi.getPost(id).catch((error) => {
+      return PostApi.getPost(postId).catch((error) => {
         navigate(routes.NOT_FOUND);
         throw error;
       });
     },
-    enabled: isValidSlug,
+    enabled: isValidSlug && hasValidId,
   });
 
   const { data: releatedPostsData } = useQuery({
-    queryKey: ["relatedPosts"],
-    queryFn: () => {
-      const id: number = Number((slug || "").split(".")[1]);
-      return PostApi.getRelatedPosts(id);
-    },
-    enabled: isValidSlug,
+    queryKey: ["relatedPosts", postId],
+    queryFn: () => PostApi.getRelatedPosts(postId),
+    enabled: isValidSlug && hasValidId,
   });
 
   const commentForm = useForm<z.infer<typeof commentFormSchema>>({
@@ -234,7 +235,6 @@ export default function PostDetail() {
     setToc(extracted);
   }, [postDetailData?.data.content, extractTocAndInjectIds]);
 
-  // Observe headings to set active TOC item while scrolling
   useEffect(() => {
     if (!toc || toc.length === 0) return;
     const obsOptions = {

@@ -25,9 +25,8 @@ import {
   AlignRightIcon,
   AlignJustifyIcon,
 } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react"; // Import useEffect
+import { useState, useRef, useEffect, useCallback } from "react"; 
 
-// TipTap Extensions
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
@@ -49,7 +48,6 @@ const TiptapToolbar = ({
   editor: ReturnType<typeof useEditor>;
 }) => {
   const imageInputRef = useRef<HTMLInputElement>(null);
-  // State để buộc re-render thanh công cụ khi vùng chọn thay đổi
   const [, forceUpdate] = useState(0);
   const [showImageControls, setShowImageControls] = useState(false);
   const [selectedImageNode, setSelectedImageNode] = useState<any>(null);
@@ -60,7 +58,6 @@ const TiptapToolbar = ({
     const { selection } = editor.state;
     const { $from } = selection;
 
-    // Check if we're selecting an image
     let imageNode = null;
 
     $from.doc.descendants((node, pos) => {
@@ -104,18 +101,15 @@ const TiptapToolbar = ({
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);
 
-    // cancelled
     if (url === null) {
       return;
     }
 
-    // empty
     if (url === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
 
-    // update link
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   };
 
@@ -157,7 +151,6 @@ const TiptapToolbar = ({
     const { selection } = editor.state;
     const { $from } = selection;
 
-    // Check if we're selecting an image
     let imageNode = null;
     let imagePos = null;
 
@@ -174,14 +167,12 @@ const TiptapToolbar = ({
     });
 
     if (imageNode && imagePos !== null) {
-      // Align image
       editor
         .chain()
         .focus()
         .updateAttributes("image", { textAlign: alignment })
         .run();
     } else {
-      // Align text
       editor.chain().focus().setTextAlign(alignment).run();
     }
   };
@@ -513,7 +504,7 @@ export default function RichTextEditor({
       TextAlign.configure({
         types: ["heading", "paragraph", "image"],
       }),
-      TextStyle, // Cần thiết cho FontFamily và các style inline khác
+      TextStyle,
       FontFamily,
     ],
     content: content,
@@ -531,7 +522,6 @@ export default function RichTextEditor({
     },
   });
 
-  // Update editor content when initialContent prop changes
   useEffect(() => {
     if (editor && initialContent !== content) {
       editor.commands.setContent(initialContent);

@@ -18,6 +18,7 @@ export const USERS_PATH = {
   ME: `${API_V1}/users/me`,
   AVATAR: `${API_V1}/users/me/avatar`,
   PASSWORD: `${API_V1}/users/me/password`,
+  TEACHERS: `${API_V1}/users/teachers`,
   BY_ID: (id: number | string) => `${API_V1}/users/${id}`,
 };
 
@@ -35,8 +36,30 @@ export const POST_PATH = {
   BASE: `${API_V1}/posts`,
   BY_ID: (id: number | string) => `${API_V1}/posts/${id}`,
   GET_PUBLIC: `${API_V1}/posts/public`,
-  GET_PUBLIC_BY_ID: (id: number | string) =>
+  GET_RELATED_BY_ID: (id: number | string) =>
     `${API_V1}/posts/public/${id}/related`,
   ME: `${API_V1}/posts/me`,
   ME_BY_ID: (id: number | string) => `${API_V1}/posts/me/${id}`,
+};
+
+export const COURSE_PATH = {
+  BASE: `${API_V1}/courses`,
+  BY_ID: (id: number | string) => `${API_V1}/courses/${id}`,
+  GET_PUBLIC: `${API_V1}/courses/public`,
+  GET_NEWEST: `${API_V1}/courses/newest`,
+};
+
+export const CHAPTER_PATH = {
+  BASE: `${API_V1}/chapters`,
+  BY_ID: (id: number | string) => `${API_V1}/chapters/${id}`,
+  BY_COURSE_ID: (courseId: number | string) =>
+    `${API_V1}/chapters/by-course/${courseId}`,
+};
+
+export const LESSON_PATH = {
+  BASE: `${API_V1}/lessons`,
+  BY_ID: (id: number | string) => `${API_V1}/lessons/${id}`,
+  BY_CHAPTER_ID: (chapterId: number | string) =>
+    `${API_V1}/lessons/by-chapter/${chapterId}`,
+  ORDER: (chapterId: number | string) => `${API_V1}/lessons/order/${chapterId}`,
 };

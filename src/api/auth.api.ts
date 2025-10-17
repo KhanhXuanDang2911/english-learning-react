@@ -1,6 +1,6 @@
 import type { RefreshTokenResponse, SignInResponse } from "@/types/auth.type";
 import http from "./http";
-import { AUTH_PATH, USERS_PATH } from "./path";
+import { AUTH_PATH } from "./path";
 import type {
   SuccessResponse,
   SuccessResponseNoData,

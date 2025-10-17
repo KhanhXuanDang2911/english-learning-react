@@ -32,7 +32,7 @@ class Http {
 
     this.instance = axios.create({
       baseURL: "http://localhost:8080/e-learning",
-      timeout: 10000,
+      timeout: 1000 * 60 * 15,
       headers: {
         "Content-Type": "application/json",
         "Accept-Language": "vi",

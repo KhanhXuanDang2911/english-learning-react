@@ -61,7 +61,6 @@ const data = {
       url: routes.CATEGORIES_COURSE_MANAGEMENT,
       icon: FolderOpen,
     },
-    { title: "Chương", url: "/admin/chapters", icon: BookOpen },
     { title: "Bài viết", url: "/admin/posts", icon: FileText },
     {
       title: "Danh mục bài viết",

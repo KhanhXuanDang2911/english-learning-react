@@ -65,7 +65,6 @@ const adminRoutes = {
   CHAPTERS_BY_COURSE: "/admin/courses/:courseId/chapters",
   CATEGORIES_COURSE_MANAGEMENT: "/admin/categories-course",
 
-  CHAPTERS_MANAGEMENT: "/admin/chapters",
   LESSONS_BY_CHAPTER: "/admin/chapters/:chapterId/lessons",
 
   FLASHCARDS_MANAGEMENT: "/admin/flashcards",

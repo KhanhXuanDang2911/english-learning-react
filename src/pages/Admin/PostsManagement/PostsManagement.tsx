@@ -49,6 +49,7 @@ import { PostApi } from "@/api/post.api";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import Pagination from "@/components/Pagination/Pagination";
+import { AppUtils } from "@/utils/appUtils";
 
 export default function PostsManagement() {
   const queryClient = useQueryClient();
@@ -370,7 +371,10 @@ export default function PostsManagement() {
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem>
                                 <Link
-                                  to="#"
+                                  to={`/posts/${encodeURIComponent(
+                                    AppUtils.renderSlug(post.slug, post.id)
+                                  )}`}
+                                  target="_blank"
                                   className="flex flex-row items-center"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />

@@ -28,7 +28,7 @@ const userRoutes = {
 const courseRoutes = {
   COURSES: "/courses",
   COURSE_DETAIL: "/courses/:slug",
-  VIDEO_LESSON: "/courses/:courseId/lessons/:lessonId",
+  VIDEO_LESSON: "/courses/:courseId/video-lessons/:lessonId",
 };
 
 const postRoutes = {

@@ -5,10 +5,12 @@ import {
   Bookmark,
   Users,
   FileText,
+  Clock,
   CreditCard,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import type { Course } from "@/types/course.type";
+import { AppUtils } from "@/utils/appUtils";
 
 function renderStars(rating: number) {
   const fullStars = Math.floor(rating);
@@ -38,6 +40,8 @@ export default function CourseItem({
   viewMode = "grid",
 }: CourseItemProps) {
   const rating = 4.7;
+
+  // --- LIST VIEW ---
   if (viewMode === "list") {
     return (
       <div className="group relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col sm:flex-row h-full">
@@ -55,7 +59,7 @@ export default function CourseItem({
           </div>
         </div>
 
-        <div className="flex-1 p-4 flex flex-col justify-between">
+        <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <img
@@ -74,7 +78,7 @@ export default function CourseItem({
               </div>
             </div>
 
-            <h3 className="text-base font-bold text-gray-900 line-clamp-2">
+            <h3 className="text-base font-bold text-gray-900 line-clamp-2 min-w-0">
               <Link
                 to={`/courses/${course.id}`}
                 className="hover:text-primary-color"
@@ -83,28 +87,23 @@ export default function CourseItem({
               </Link>
             </h3>
 
-            <div className="flex items-center gap-4 text-xs text-gray-600 flex-wrap">
-              <div className="flex items-center gap-1">
+            {/* === Info section reordered === */}
+            <div className="flex items-center gap-4 text-xs text-gray-600 flex-wrap min-w-0">
+              <div className="flex items-center gap-2">
                 <FileText size={12} className="text-blue-500" />
                 <span>{course.numberOfLessons} bài học</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <Users size={12} className="text-purple-500" />
                 <span>{245} học viên</span>
               </div>
+              <div className="flex items-center gap-2">
+                <Clock size={12} className="text-gray-400" />
+                <span>{AppUtils.formatTime(course.duration)}</span>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-3 gap-3 flex-wrap">
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-extrabold text-gray-900">
-                {course.discountPrice}đ
-              </span>
-              <span className="text-xs text-gray-400 line-through">
-                {course.price}
-              </span>
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
+            <div className="flex gap-2 w-full sm:w-auto mt-2">
               <Button
                 size="sm"
                 className="bg-primary-color text-white font-medium px-3 py-1 rounded-lg shadow hover:bg-hover-primary-color transition-all whitespace-nowrap w-full sm:w-auto"
@@ -126,6 +125,7 @@ export default function CourseItem({
     );
   }
 
+  // --- GRID VIEW ---
   return (
     <div className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full">
       <div className="relative aspect-[16/9] w-full overflow-hidden">
@@ -149,7 +149,7 @@ export default function CourseItem({
         </Button>
       </div>
 
-      <div className="p-5 space-y-3 flex flex-col flex-1">
+      <div className="p-5 space-y-3 flex flex-col flex-1 min-w-0">
         <div className="flex items-center gap-3">
           <img
             src={course.teacher.avatarUrl || "/images/student.png"}
@@ -170,7 +170,7 @@ export default function CourseItem({
           </div>
         </div>
 
-        <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
+        <h3 className="text-lg font-bold text-gray-900 line-clamp-2 min-w-0">
           <Link
             to={`/courses/${course.id}`}
             className="hover:text-primary-color"
@@ -179,7 +179,8 @@ export default function CourseItem({
           </Link>
         </h3>
 
-        <div className="flex items-center gap-6 text-sm text-gray-600">
+        {/* === Info section reordered === */}
+        <div className="flex items-center gap-3 text-sm text-gray-600 min-w-0 flex-wrap">
           <div className="flex items-center gap-2">
             <FileText size={16} className="text-blue-500" />
             <span>{course.numberOfLessons} bài học</span>
@@ -188,9 +189,11 @@ export default function CourseItem({
             <Users size={16} className="text-purple-500" />
             <span>{245} học viên</span>
           </div>
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-gray-400" />
+            <span>Thời lượng: {AppUtils.formatTime(course.duration)}</span>
+          </div>
         </div>
-
-        <div className="flex-1" />
 
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 gap-3 flex-wrap">
           <div className="flex items-baseline gap-2 min-w-0">

@@ -47,6 +47,7 @@ export const COURSE_PATH = {
   BY_ID: (id: number | string) => `${API_V1}/courses/${id}`,
   GET_PUBLIC: `${API_V1}/courses/public`,
   GET_NEWEST: `${API_V1}/courses/newest`,
+  GET_DETAILS: `${API_V1}/courses/public/details`,
 };
 
 export const CHAPTER_PATH = {

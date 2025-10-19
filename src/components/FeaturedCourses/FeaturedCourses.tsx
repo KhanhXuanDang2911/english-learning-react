@@ -111,6 +111,7 @@ const FeaturedCourses = () => {
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
                 duration: c.duration,
+                chaptersDetails: c.chaptersDetails ?? [],
                 numberOfLessons: c.numberOfLessons,
               };
               return <CourseItem key={c.id} course={mapped} />;

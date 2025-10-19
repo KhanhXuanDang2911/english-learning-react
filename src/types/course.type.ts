@@ -1,4 +1,5 @@
 import type { Category } from "./category.type";
+import type { Chapter } from "./chapter.type";
 import type { SuccessResponse } from "./common.type";
 import type { UserSummary } from "./user.type";
 
@@ -36,6 +37,7 @@ export interface Course {
   updatedAt: string;
   duration?: number;
   numberOfLessons: number;
+  chaptersDetails: Chapter[];
 }
 
 export type CourseResponse = SuccessResponse<Course>;

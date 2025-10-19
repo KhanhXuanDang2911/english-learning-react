@@ -10,4 +10,16 @@ export class AppUtils {
     const regex = /^.+\.\d+$/;
     return regex.test(input);
   }
+
+  static formatTime(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    const hh = hours.toString().padStart(2, "0");
+    const mm = minutes.toString().padStart(2, "0");
+    const ss = secs.toString().padStart(2, "0");
+
+    return `${hh}:${mm}:${ss}`;
+  }
 }

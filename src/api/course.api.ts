@@ -118,6 +118,16 @@ export class CourseApi {
     return res.data.data;
   };
 
+  static getDetails = async (id: string | number) => {
+    const url = `${COURSE_PATH.GET_DETAILS}/${id}`;
+    const res = await http.get<{
+      status: number;
+      message: string;
+      data: Course;
+    }>(url);
+    return res.data.data;
+  };
+
   static delete = async (id: number) => {
     const res = await http.delete<SuccessResponseNoData>(COURSE_PATH.BY_ID(id));
     return res.data;

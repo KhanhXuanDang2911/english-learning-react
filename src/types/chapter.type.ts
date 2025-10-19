@@ -1,4 +1,5 @@
 import type { SuccessResponse } from "./common.type";
+import type { Lesson } from "./lesson.type";
 
 export interface ChapterRequest {
   title: string;
@@ -18,6 +19,7 @@ export interface Chapter {
   numberOfLessons?: number;
   duration?: number;
   courseId?: number;
+  lessonsDetails: Lesson[];
 }
 
 export interface Order {

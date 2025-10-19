@@ -13,12 +13,12 @@ import {
   Globe,
   Play,
   Lock,
-  Check,
   Heart,
-  ChevronDown,
-  ChevronRight,
   StarHalf,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Course } from "@/types/course.type";
+import { CourseApi } from "@/api/course.api";
 import {
   Form,
   FormControl,
@@ -44,134 +44,34 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import dayjs from "dayjs";
+import type { Chapter } from "@/types/chapter.type";
+import { AppUtils } from "@/utils/appUtils";
+import type { Lesson } from "@/types/lesson.type";
 
-// Mock data for course detail
-const courseDetail = {
-  id: "tieng-anh-giao-tiep-co-ban",
-  title: "Tiếng Anh giao tiếp cho người mới bắt đầu",
-  subtitle: "Xây dựng nền tảng giao tiếp tiếng Anh vững chắc từ con số 0",
-  description:
-    "Khóa học được thiết kế dành riêng cho người mới bắt đầu học tiếng Anh. Bạn sẽ học được những cụm từ, câu giao tiếp cơ bản nhất trong cuộc sống hàng ngày, từ việc chào hỏi, giới thiệu bản thân đến mua sắm, đặt món ăn tại nhà hàng.",
-  instructor: {
-    name: "Nguyễn Văn A",
-    title: "Giảng viên tiếng Anh 10+ năm kinh nghiệm",
+// Keep only mock reviews (used when API has no reviews)
+const mockReviews = [
+  {
+    id: 1,
+    user: "Minh Anh",
     avatar:
-      "https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=600",
-    students: 15420,
-    courses: 12,
+      "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=600",
+    rating: 5,
+    date: "2 tuần trước",
+    comment:
+      "Khóa học rất hay, giảng viên dạy dễ hiểu. Tôi đã có thể giao tiếp cơ bản sau 1 tháng học.",
   },
-  image:
-    "https://dinoenglish.app/_next/image?url=%2Fassets%2Fblog%2Ftu-tin-giao-tiep-tieng-anh-voi-3000-tu-vung-thong-dung-nhat.png&w=1920&q=75",
-  rating: 4.7,
-  ratingCount: 2847,
-  students: 12450,
-  hours: 25.5,
-  lessons: 156,
-  level: "Cơ bản",
-  language: "Tiếng Việt",
-  price: 299000,
-  originalPrice: 1299000,
-  discount: 77,
-  previewVideo:
-    "/placeholder.svg?height=720&width=1280&text=Course+Preview+Video",
-  features: `
-  <ul>
-    <li>25.5 giờ video theo yêu cầu</li>
-    <li>156 bài giảng</li>
-    <li>Truy cập trọn đời</li>
-    <li>Truy cập trên thiết bị di động và TV</li>
-    <li>Chứng chỉ hoàn thành</li>
-    <li>Tài liệu tải về</li>
-  </ul>
-`,
-
-  whatYouLearn: `
-  <ul>
-    <li>Giao tiếp cơ bản trong các tình huống hàng ngày</li>
-    <li>Phát âm chuẩn các âm tiếng Anh</li>
-    <li>Từ vựng thiết yếu cho người mới bắt đầu (1000+ từ)</li>
-    <li>Ngữ pháp cơ bản: thì hiện tại, quá khứ, tương lai</li>
-    <li>Kỹ năng nghe hiểu đối thoại đơn giản</li>
-    <li>Tự tin giới thiệu bản thân bằng tiếng Anh</li>
-  </ul>
-`,
-
-  requirements: `
-  <ul>
-    <li>Không cần kiến thức tiếng Anh trước đó</li>
-    <li>Máy tính hoặc điện thoại có kết nối internet</li>
-    <li>Sự kiên trì và động lực học tập</li>
-  </ul>
-`,
-
-  curriculum: [
-    {
-      title: "Giới thiệu và làm quen",
-      lessons: 8,
-      duration: "1h 30m",
-      isPreview: true,
-      lectures: [
-        {
-          title: "Chào mừng đến với khóa học",
-          duration: "5:30",
-          isPreview: true,
-        },
-        { title: "Cách học hiệu quả nhất", duration: "8:45", isPreview: true },
-        {
-          title: "Bảng chữ cái tiếng Anh",
-          duration: "12:20",
-          isPreview: false,
-        },
-        { title: "Các âm cơ bản", duration: "15:30", isPreview: false },
-      ],
-    },
-    {
-      title: "Chào hỏi và giới thiệu",
-      lessons: 12,
-      duration: "2h 15m",
-      isPreview: false,
-      lectures: [
-        { title: "Cách chào hỏi cơ bản", duration: "10:20", isPreview: false },
-        { title: "Giới thiệu bản thân", duration: "12:45", isPreview: false },
-        { title: "Hỏi thông tin cá nhân", duration: "8:30", isPreview: false },
-        { title: "Thực hành đối thoại", duration: "15:20", isPreview: false },
-      ],
-    },
-    {
-      title: "Gia đình và bạn bè",
-      lessons: 10,
-      duration: "1h 45m",
-      isPreview: false,
-      lectures: [
-        { title: "Từ vựng về gia đình", duration: "9:15", isPreview: false },
-        { title: "Miêu tả người thân", duration: "11:30", isPreview: false },
-        { title: "Nói về sở thích", duration: "13:20", isPreview: false },
-      ],
-    },
-  ],
-  reviews: [
-    {
-      id: 1,
-      user: "Minh Anh",
-      avatar:
-        "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=600",
-      rating: 5,
-      date: "2 tuần trước",
-      comment:
-        "Khóa học rất hay, giảng viên dạy dễ hiểu. Tôi đã có thể giao tiếp cơ bản sau 1 tháng học.",
-    },
-    {
-      id: 2,
-      user: "Thanh Hoa",
-      avatar:
-        "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=600",
-      rating: 4,
-      date: "1 tháng trước",
-      comment:
-        "Nội dung khóa học phong phú, có nhiều bài tập thực hành. Chỉ mong có thêm nhiều tình huống thực tế hơn.",
-    },
-  ],
-};
+  {
+    id: 2,
+    user: "Thanh Hoa",
+    avatar:
+      "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=600",
+    rating: 4,
+    date: "1 tháng trước",
+    comment:
+      "Nội dung khóa học phong phú, có nhiều bài tập thực hành. Chỉ mong có thêm nhiều tình huống thực tế hơn.",
+  },
+];
 
 const reviewFormSchema = z.object({
   content: z
@@ -184,10 +84,14 @@ const reviewFormSchema = z.object({
 });
 
 export default function CourseDetail() {
-  // const { slug } = useParams();
-  const [expandedSections, setExpandedSections] = useState<number[]>([0]);
+  const { slug } = useParams();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isOpenModalPreview, setOpenModalPreview] = useState<boolean>(false);
+  const [preview, setPreview] = useState<{
+    title?: string;
+    videoSrc?: string;
+    poster?: string;
+  } | null>(null);
 
   const reviewForm = useForm<z.infer<typeof reviewFormSchema>>({
     defaultValues: {
@@ -200,12 +104,6 @@ export default function CourseDetail() {
   const handleSubmitReviewForm = (data: z.infer<typeof reviewFormSchema>) => {
     console.log(data);
     reviewForm.setValue("content", "");
-  };
-
-  const toggleSection = (index: number) => {
-    setExpandedSections((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
   };
 
   const renderStars = (rating: number) => {
@@ -236,9 +134,22 @@ export default function CourseDetail() {
       });
   };
 
-  const handlePreviewLecture = () => {
+  const handlePreviewLecture = (lecture?: Lesson) => {
+    const videoSrc = lecture?.videoUrl ?? "";
+    const poster = courseData?.thumbnailUrl ?? undefined;
+    setPreview({ title: lecture?.title, videoSrc, poster });
     setOpenModalPreview(true);
   };
+  // (helper removed) formatting helpers can be added as needed
+
+  const { data: courseData } = useQuery<Course | null>({
+    queryKey: ["courses", "details", slug],
+    queryFn: async () => {
+      if (!slug) return null;
+      return await CourseApi.getDetails(String(slug));
+    },
+    enabled: !!slug,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -253,24 +164,22 @@ export default function CourseDetail() {
                   Bestseller
                 </Badge>
                 <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  {courseDetail.title}
+                  {courseData?.title ?? ""}
                 </h1>
                 <p className="text-xl text-gray-300 mb-6">
-                  {courseDetail.subtitle}
+                  {courseData?.shortDescription ?? ""}
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="flex">{renderStars(courseDetail.rating)}</div>
-                  <span className="font-semibold">{courseDetail.rating}</span>
-                  <span className="text-gray-300">
-                    ({courseDetail.ratingCount.toLocaleString()} đánh giá)
-                  </span>
+                  <div className="flex">{renderStars(5)}</div>
+                  <span className="font-semibold">{5}</span>
+                  <span className="text-gray-300">(928 đánh giá)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  <span>{courseDetail.students.toLocaleString()} học viên</span>
+                  <span>100 học viên</span>
                 </div>
               </div>
 
@@ -280,18 +189,21 @@ export default function CourseDetail() {
                   href="#"
                   className="text-blue-400 hover:underline font-semibold"
                 >
-                  {courseDetail.instructor.name}
+                  {courseData?.teacher.fullName}
                 </a>
               </div>
 
               <div className="flex flex-wrap items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4" />
-                  <span>{courseDetail.language}</span>
+                  <span>{"—"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  <span>Cập nhật lần cuối 7/2025</span>
+                  <span>
+                    Cập nhật lần cuối{" "}
+                    {dayjs(courseData?.updatedAt).format("DD/MM/YYYY")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -302,8 +214,8 @@ export default function CourseDetail() {
                 <CardContent className="p-0">
                   <div className="relative">
                     <img
-                      src={courseDetail.image || "/placeholder.svg"}
-                      alt={courseDetail.title}
+                      src={courseData?.thumbnailUrl ?? "/placeholder.svg"}
+                      alt={courseData?.title ?? ""}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
                   </div>
@@ -311,14 +223,19 @@ export default function CourseDetail() {
                     <div className="text-center mb-4">
                       <div className="flex items-baseline justify-center gap-2 mb-2">
                         <span className="text-3xl font-bold">
-                          {courseDetail.price.toLocaleString()}đ
+                          {(courseData?.discountPrice ?? 0).toLocaleString()}đ
                         </span>
                         <span className="text-lg text-gray-500 line-through">
-                          {courseDetail.originalPrice.toLocaleString()}đ
+                          {(courseData?.price ?? 0).toLocaleString()}đ
                         </span>
                       </div>
                       <Badge variant="destructive" className="text-sm">
-                        Giảm {courseDetail.discount}%
+                        Giảm{" "}
+                        {(
+                          100 -
+                          (courseData?.discountPrice / courseData?.price) * 100
+                        ).toFixed(0)}
+                        %
                       </Badge>
                     </div>
 
@@ -357,7 +274,7 @@ export default function CourseDetail() {
               <CardContent>
                 <div
                   dangerouslySetInnerHTML={{
-                    __html: courseDetail.whatYouLearn,
+                    __html: courseData?.learningOutcomes ?? "",
                   }}
                 />
               </CardContent>
@@ -368,71 +285,79 @@ export default function CourseDetail() {
               <CardHeader>
                 <CardTitle>Nội dung khóa học</CardTitle>
                 <div className="text-sm text-gray-600">
-                  {courseDetail.curriculum.length} phần • {courseDetail.lessons}{" "}
-                  bài giảng •{courseDetail.hours}h tổng thời lượng
+                  {courseData?.chaptersDetails?.length ?? 0} phần •{" "}
+                  {courseData?.numberOfLessons ?? 0} bài giảng •{" "}
+                  {AppUtils.formatTime(courseData?.duration)} tổng thời lượng
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {courseDetail.curriculum.map((section, index) => (
-                  <>
-                    <Accordion key={index} type="single" collapsible>
-                      <AccordionItem value="item-1">
-                        <AccordionTrigger className="cursor-pointer hover:bg-slate-100 px-6 border border-primary-color hover:no-underline rounded-none">
-                          <div className="">
-                            <p className="text-[16px] font-semibold">
-                              {section.title}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {section.lessons} bài giảng • {section.duration}
-                            </p>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="bg-slate-200">
-                            {section.lectures.map((lecture, lectureIndex) => (
-                              <div
-                                key={lectureIndex}
-                                className="flex items-center justify-between p-4 border-t border-t-gray-300"
-                              >
-                                <div className="flex items-center gap-3">
-                                  {lecture.isPreview ? (
-                                    <button
-                                      onClick={handlePreviewLecture}
-                                      className="flex items-center gap-2 hover:text-blue-600 cursor-pointer"
-                                    >
-                                      <Play className="h-4 w-4 text-blue-500" />
-                                      <span className="text-sm">
-                                        {lecture.title}
-                                      </span>
-                                    </button>
-                                  ) : (
-                                    <>
-                                      <Lock className="h-4 w-4 text-gray-400" />
-                                      <span className="text-sm">
-                                        {lecture.title}
-                                      </span>
-                                    </>
-                                  )}
-                                  {lecture.isPreview && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      Xem trước
-                                    </Badge>
-                                  )}
-                                </div>
-                                <span className="text-sm text-gray-500">
-                                  {lecture.duration}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </>
-                ))}
+                {(courseData?.chaptersDetails ?? []).map(
+                  (chapter: Chapter, index: number) => (
+                    <>
+                      <Accordion key={index} type="single" collapsible>
+                        <AccordionItem value="item-1">
+                          <AccordionTrigger className="cursor-pointer hover:bg-slate-100 px-6 border border-primary-color hover:no-underline rounded-none">
+                            <div className="">
+                              <p className="text-[16px] font-semibold">
+                                {chapter.title}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {chapter.numberOfLessons} bài giảng •{" "}
+                                {AppUtils.formatTime(chapter.duration)}
+                              </p>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="bg-slate-200">
+                              {(chapter.lessonsDetails ?? []).map(
+                                (lecture: Lesson, lectureIndex: number) => (
+                                  <div
+                                    key={lectureIndex}
+                                    className="flex items-center justify-between p-4 border-t border-t-gray-300"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      {lecture.isPreview ? (
+                                        <button
+                                          onClick={() =>
+                                            handlePreviewLecture(lecture)
+                                          }
+                                          className="flex items-center gap-2 hover:text-blue-600 cursor-pointer"
+                                        >
+                                          <Play className="h-4 w-4 text-blue-500" />
+                                          <span className="text-sm">
+                                            {lecture.title}
+                                          </span>
+                                        </button>
+                                      ) : (
+                                        <>
+                                          <Lock className="h-4 w-4 text-gray-400" />
+                                          <span className="text-sm">
+                                            {lecture.title}
+                                          </span>
+                                        </>
+                                      )}
+                                      {lecture?.isPreview && (
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs"
+                                        >
+                                          Xem trước
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                      {AppUtils.formatTime(lecture.duration)}
+                                    </span>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </>
+                  )
+                )}
               </CardContent>
             </Card>
 
@@ -444,7 +369,7 @@ export default function CourseDetail() {
               <CardContent>
                 <div
                   dangerouslySetInnerHTML={{
-                    __html: courseDetail.requirements,
+                    __html: courseData?.requirements ?? "",
                   }}
                 />
               </CardContent>
@@ -457,7 +382,7 @@ export default function CourseDetail() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 leading-relaxed">
-                  {courseDetail.description}
+                  {courseData?.detailDescription ?? ""}
                 </p>
               </CardContent>
             </Card>
@@ -470,29 +395,22 @@ export default function CourseDetail() {
               <CardContent>
                 <div className="flex items-start gap-4">
                   <img
-                    src={courseDetail.instructor.avatar || "/placeholder.svg"}
-                    alt={courseDetail.instructor.name}
+                    src={courseData?.teacher?.avatarUrl ?? "/placeholder.svg"}
+                    alt={courseData?.teacher?.fullName ?? ""}
                     className="w-16 h-16 rounded-full object-cover"
                   />
                   <div className="flex-1">
                     <h4 className="font-semibold text-lg mb-1">
-                      {courseDetail.instructor.name}
+                      {courseData?.teacher?.fullName ?? ""}
                     </h4>
-                    <p className="text-gray-600 mb-3">
-                      {courseDetail.instructor.title}
-                    </p>
-
                     <div className="flex flex-wrap gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
-                        <span>
-                          {courseDetail.instructor.students.toLocaleString()}{" "}
-                          học viên
-                        </span>
+                        <span>1000 học viên</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4" />
-                        <span>{courseDetail.instructor.courses} khóa học</span>
+                        <span>1000 khóa học</span>
                       </div>
                     </div>
                   </div>
@@ -505,17 +423,9 @@ export default function CourseDetail() {
               <CardHeader>
                 <CardTitle>Đánh giá của học viên</CardTitle>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {renderStars(courseDetail.rating)}
-                    </div>
-                    <span className="text-2xl font-bold">
-                      {courseDetail.rating}
-                    </span>
-                  </div>
-                  <span className="text-gray-600">
-                    {courseDetail.ratingCount.toLocaleString()} đánh giá
-                  </span>
+                  <div className="flex">{renderStars(4.5)}</div>
+                  <div className="text-2xl font-bold">{4.5}</div>
+                  <span className="text-gray-600">1002 đánh giá</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -600,7 +510,7 @@ export default function CourseDetail() {
                   </Form>
                 </div>
                 {/* List reviews */}
-                {courseDetail.reviews.map((review) => (
+                {mockReviews.map((review: any) => (
                   <div key={review.id} className="flex gap-4">
                     <img
                       src={review.avatar || "/placeholder.svg"}
@@ -633,8 +543,8 @@ export default function CourseDetail() {
                 <CardContent className="p-0">
                   <div className="relative">
                     <img
-                      src={courseDetail.image || "/placeholder.svg"}
-                      alt={courseDetail.title}
+                      src={courseData?.thumbnailUrl || "/placeholder.svg"}
+                      alt={courseData?.title}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
                   </div>
@@ -643,14 +553,19 @@ export default function CourseDetail() {
                     <div className="text-center mb-6">
                       <div className="flex items-baseline justify-center gap-2 mb-2">
                         <span className="text-3xl font-bold">
-                          {courseDetail.price.toLocaleString()}đ
+                          {courseData?.discountPrice.toLocaleString()}đ
                         </span>
                         <span className="text-lg text-gray-500 line-through">
-                          {courseDetail.originalPrice.toLocaleString()}đ
+                          {courseData?.price.toLocaleString()}đ
                         </span>
                       </div>
                       <Badge variant="destructive" className="text-sm">
-                        Giảm {courseDetail.discount}%
+                        Giảm{" "}
+                        {(
+                          100 -
+                          (courseData?.discountPrice / courseData?.price) * 100
+                        ).toFixed(0)}
+                        %
                       </Badge>
                     </div>
 
@@ -685,15 +600,6 @@ export default function CourseDetail() {
                         Yêu thích
                       </Button>
                     </div>
-
-                    <div className="space-y-3 text-sm">
-                      <h4 className="font-semibold">Khóa học này bao gồm:</h4>
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: courseDetail.features,
-                        }}
-                      />
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -706,9 +612,9 @@ export default function CourseDetail() {
       <CoursePreviewModal
         isOpen={isOpenModalPreview}
         setOpen={setOpenModalPreview}
-        courseTitle={courseDetail.title}
-        videoSrc={courseDetail.previewVideo}
-        videoPoster={courseDetail.image}
+        courseTitle={preview?.title ?? courseData?.title}
+        videoSrc={preview?.videoSrc ?? ""}
+        videoPoster={preview?.poster ?? courseData?.thumbnailUrl}
       />
     </div>
   );
